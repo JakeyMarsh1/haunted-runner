@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import MusicManager from '../utils/MusicManager';
+import SceneTransition from '../utils/SceneTransition';
 
 class GameScene extends Phaser.Scene {
 
@@ -10,6 +11,9 @@ class GameScene extends Phaser.Scene {
   create() {
     this.gameSpeed = 2;
     const { height, width } = this.game.config;
+
+    // Fade in from black
+    SceneTransition.setupFadeIn(this, 800);
 
     // Initialize music manager with game music
     MusicManager.setupMusic(this, 'gameMusic');

@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import MusicManager from "../utils/MusicManager";
+import SceneTransition from "../utils/SceneTransition";
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -8,6 +9,9 @@ export default class MenuScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+
+    // Fade in from black
+    SceneTransition.setupFadeIn(this, 800);
 
     // Initialize music manager
     MusicManager.init(this);
@@ -57,10 +61,9 @@ export default class MenuScene extends Phaser.Scene {
 
   
 
-  // Input: go straight to GameScene
+   // Input: go straight to GameScene with fade transition
   this.input.keyboard.on("keydown-SPACE", () => {
-  
-    this.scene.start("GameScene");
+    SceneTransition.fadeToScene(this, "GameScene", 600);
   });
 
   this.input.on("pointerdown", (pointer) => {
@@ -68,7 +71,7 @@ export default class MenuScene extends Phaser.Scene {
     if (this.musicButton.getBounds().contains(pointer.x, pointer.y)) {
       return;
     }
-    this.scene.start("GameScene");
+    SceneTransition.fadeToScene(this, "GameScene", 600);
   });
 }
 }
