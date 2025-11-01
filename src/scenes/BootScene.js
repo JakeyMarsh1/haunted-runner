@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import SceneTransition from "../utils/SceneTransition";
 import menuBackgroundImg from "../assets/backgrounds/Background2.png";
 import gameBackgroundImg from "../assets/backgrounds/Background4.png";
 import menuMusicFile from "../assets/music/spooky-wind.mp3";
@@ -13,7 +14,7 @@ export default class BootScene extends Phaser.Scene {
   preload() {
     
     const { width, height } = this.scale;
-    this.cameras.main.setBackgroundColor("#ffffff");
+    this.cameras.main.setBackgroundColor("#000000");
 
     // Load all game assets
     this.load.image("menuBackground", menuBackgroundImg);
@@ -29,7 +30,7 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    // Start the menu scene once everything is loaded
-    this.scene.start("MenuScene");
+    // Start the menu scene with fade transition
+    SceneTransition.fadeToScene(this, "MenuScene", 400);
   }
 }
