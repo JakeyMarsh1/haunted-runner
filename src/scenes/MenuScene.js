@@ -5,9 +5,18 @@ export default class MenuScene extends Phaser.Scene {
     super("MenuScene");
   }
 
+  preload() {
+    // Load the background image
+    this.load.image("menuBackground", "../src/assets/backgrounds/background4.png");
+   
+  }
+
   create() {
     const { width, height } = this.scale;
-    this.cameras.main.setBackgroundColor("#020617");
+
+    // Add the background first
+    const bg = this.add.image(width /2, height /2, "menuBackground").setOrigin(0.5);
+    bg.setDisplaySize(width, height); // make it fill the whole screen
 
     this.add
       .text(width / 2, height * 0.28, "Haunted Runner", {
@@ -43,11 +52,14 @@ export default class MenuScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    this.input.keyboard.on("keydown-SPACE", () => this.pulse());
-    this.input.on("pointerdown", () => this.pulse());
-  }
 
-  pulse() {
-    this.cameras.main.flash(150, 34, 211, 255);
-  }
+  // Input: go straight to GameScene
+  this.input.keyboard.on("keydown-SPACE", () => {
+    this.scene.start("GameScene");
+  });
+
+  this.input.on("pointerdown", () => {
+    this.scene.start("GameScene");
+  });
+}
 }
