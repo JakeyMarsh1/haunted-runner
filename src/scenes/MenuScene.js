@@ -26,7 +26,7 @@ export default class MenuScene extends Phaser.Scene {
       volume: 0.5, // between 0 and 1
       loop: true   // repeat continuously
     });
-    this.music.play();
+    // Music starts muted by default
 
 
     this.add
@@ -63,15 +63,38 @@ export default class MenuScene extends Phaser.Scene {
       repeat: -1,
     });
 
+   // --- Music Toggle Button ---
+   this.musicOn = false;
+   this.musicButton = this.add.text(width - 20, 20, "🔇", {
+     fontSize: "32px",
+     color: "#f8fafc",
+   })
+     .setOrigin(1, 0)
+     .setInteractive({ useHandCursor: true })
+     .on("pointerdown", () => {
+       this.musicOn = !this.musicOn;
+       if (this.musicOn) {
+         this.music.play();
+         this.musicButton.setText("🔊");
+       } else {
+         this.music.stop();
+         this.musicButton.setText("🔇");
+       }
+     });
+
+  
 
   // Input: go straight to GameScene
   this.input.keyboard.on("keydown-SPACE", () => {
-    this.music.stop()
+  
     this.scene.start("GameScene");
   });
 
-  this.input.on("pointerdown", () => {
-    this.music.stop();
+  this.input.on("pointerdown", (pointer) => {
+    // Don't start game if clicking on the music button
+    if (this.musicButton.getBounds().contains(pointer.x, pointer.y)) {
+      return;
+    }
     this.scene.start("GameScene");
   });
 }
