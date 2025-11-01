@@ -9,7 +9,7 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.gameSpeed = 2;
+    this.gameSpeed = 5;
     const { height, width } = this.game.config;
 
     // Fade in from black
@@ -25,18 +25,18 @@ class GameScene extends Phaser.Scene {
     this.gameBackground.tilePositionY = 55; // Shift the texture up to show different part of image
 
     // Create visible ground for player to stand on
-    const groundY = height - 100; // Ground position
-    this.ground = this.add.rectangle(width / 2, groundY, width, 20, 0xff0000, 0.5); // Red with 50% opacity
+    const groundY = height + 55; // Ground position
+    this.ground = this.add.rectangle(width / 2, groundY, width, 200, 0x1b0e1c, 0.9); // Red with 50% opacity
     this.physics.add.existing(this.ground, true); // true = static body (doesn't move)
 
     // Create the player sprite
-    this.player = this.physics.add.sprite(200, groundY - 200, 'player');
+    this.player = this.physics.add.sprite(250 , groundY - 250, 'player');
     this.player.setScale(0.45); // Scale down from 900px to ~405px (3x bigger)
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(10); // Make sure player is above background
     
     // Make sure player physics body is active
-    this.player.body.setSize(this.player.width * 0.6, this.player.height * 0.8);
+    this.player.body.setSize(this.player.width * 0.6, this.player.height * 0.7);
     this.player.body.setOffset(this.player.width * 0.2, this.player.height * 0.1);
     
     // Add collision between player and ground
