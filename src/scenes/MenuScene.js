@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import menuBackgroundImg from "../assets/backgrounds/Background4.png";
+import menuMusicFile from "../assets/music/spooky-wind.mp3";
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -7,8 +9,9 @@ export default class MenuScene extends Phaser.Scene {
 
   preload() {
     // Load the background image
-    this.load.image("menuBackground", "../src/assets/backgrounds/background4.png");
-   
+    this.load.image("menuBackground", menuBackgroundImg);
+   // Music or sound
+    this.load.audio("menuMusic", menuMusicFile);
   }
 
   create() {
@@ -17,6 +20,14 @@ export default class MenuScene extends Phaser.Scene {
     // Add the background first
     const bg = this.add.image(width /2, height /2, "menuBackground").setOrigin(0.5);
     bg.setDisplaySize(width, height); // make it fill the whole screen
+
+      // Add and play background music
+    this.music = this.sound.add("menuMusic", {
+      volume: 0.5, // between 0 and 1
+      loop: true   // repeat continuously
+    });
+    this.music.play();
+
 
     this.add
       .text(width / 2, height * 0.28, "Haunted Runner", {
@@ -55,10 +66,12 @@ export default class MenuScene extends Phaser.Scene {
 
   // Input: go straight to GameScene
   this.input.keyboard.on("keydown-SPACE", () => {
+    this.music.stop()
     this.scene.start("GameScene");
   });
 
   this.input.on("pointerdown", () => {
+    this.music.stop();
     this.scene.start("GameScene");
   });
 }
