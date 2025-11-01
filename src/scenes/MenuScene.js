@@ -1,17 +1,8 @@
 import Phaser from "phaser";
-import menuBackgroundImg from "../assets/backgrounds/Background4.png";
-import menuMusicFile from "../assets/music/spooky-wind.mp3";
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
     super("MenuScene");
-  }
-
-  preload() {
-    // Load the background image
-    this.load.image("menuBackground", menuBackgroundImg);
-   // Music or sound
-    this.load.audio("menuMusic", menuMusicFile);
   }
 
   create() {
