@@ -1,27 +1,35 @@
+/*
+  GameScene.js
+  Purpose: Core horizontal runner gameplay — fixed player on X-axis, scrolling background, input handling.
+*/
+
 import Phaser from 'phaser';
 
 class GameScene extends Phaser.Scene {
 
   constructor() {
     super('GameScene');
+    this.playerFixedX = 300; // Fixed X position (center-left)
+    this.worldSpeed = 150;   // Pixels per second (forward motion)
   }
 
   create() {
-    console.log('GameScene create() started');
+    if (import.meta.env.DEV) console.log('GameScene create() started');
     const { height, width } = this.game.config;
-    console.log('Game dimensions:', width, height);
+    if (import.meta.env.DEV) console.log('Game dimensions:', width, height);
     
-    // --- Add the background ---
-    const bg = this.add.image(width / 2, height / 2, "gameBackground");
-    bg.setOrigin(0.5);
-    bg.setDisplaySize(width, height); // Makes it fill the whole screen
+    // --- Add scrolling background (tileSprite for seamless loop) ---
+    this.background = this.add.tileSprite(width / 2, height / 2, width, height, 'gameBackground');
+    this.background.setOrigin(0.5);
+    this.background.setScrollFactor(0); // Fixed to camera
+    this.background.setDepth(0);
 
-
-    // Create the player sprite
-    this.player = this.physics.add.sprite(200, height - 200, 'player');
-    this.player.setScale(0.45); // Scale down from 900px to ~405px (3x bigger)
+    // Create the player sprite at FIXED X position
+    this.player = this.physics.add.sprite(this.playerFixedX, height - 200, 'player');
+    this.player.setScale(0.45);
     this.player.setCollideWorldBounds(true);
-    this.player.setDepth(10); // Make sure player is above background
+    this.player.setDepth(10); // Above background
+    this.player.body.setDrag(0.98); // Smooth deceleration
     
     // Create running animation (12 frames: 0-11)
     this.anims.create({
@@ -34,20 +42,42 @@ class GameScene extends Phaser.Scene {
     // Play the running animation
     this.player.play('run');
     
-    // Set horizontal velocity to make it run
-    this.player.setVelocityX(200);
+    // NO horizontal velocity — player is fixed on X axis
+    this.player.setVelocityX(0);
     
-    // Debug: log player position and visibility
-    console.log('Player created at:', this.player.x, this.player.y);
-    console.log('Player velocity:', this.player.body.velocity.x, this.player.body.velocity.y);
-    console.log('Player body:', this.player.body);
+    // Input for vertical movement
+    this.keys = this.input.keyboard.addKeys({
+      up: Phaser.Input.Keyboard.KeyCodes.UP,
+      down: Phaser.Input.Keyboard.KeyCodes.DOWN,
+      w: Phaser.Input.Keyboard.KeyCodes.W,
+      s: Phaser.Input.Keyboard.KeyCodes.S
+    });
+
+    if (import.meta.env.DEV) console.log('Player created at FIXED X:', this.player.x, 'Y:', this.player.y);
   }
 
-  update(){
-    // Wrap around screen when player goes off the right edge
-    if (this.player.x > this.game.config.width) {
-      this.player.x = -this.player.width;
+  // update() runs every frame: handles input, locks player X, scrolls background
+  update() {
+    const { height } = this.game.config;
+
+    // Player movement: UP/DOWN or W/S only (Y-axis)
+    if (this.keys.up.isDown || this.keys.w.isDown) {
+      this.player.setVelocityY(-250);
+    } else if (this.keys.down.isDown || this.keys.s.isDown) {
+      this.player.setVelocityY(250);
+    } else {
+      this.player.setVelocityY(0);
     }
+
+    // Keep player X FIXED (don't let it move horizontally)
+    this.player.x = this.playerFixedX;
+
+    // Move background LEFT to simulate forward motion
+    this.background.tilePositionX += this.worldSpeed * (1 / 60);
+
+    // Clamp player Y to screen bounds
+    if (this.player.y < 0) this.player.y = 0;
+    if (this.player.y > height) this.player.y = height;
   }
 }
 
