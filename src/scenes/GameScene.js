@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import MusicManager from '../utils/MusicManager';
 
 class GameScene extends Phaser.Scene {
 
@@ -8,17 +9,17 @@ class GameScene extends Phaser.Scene {
 
   create() {
     this.gameSpeed = 2;
-    console.log('GameScene create() started');
     const { height, width } = this.game.config;
-    console.log('Game dimensions:', width, height);
-    
+
+    // Initialize music manager with game music
+    MusicManager.setupMusic(this, 'gameMusic');
+
     // --- Add the scrolling background ---
     this.gameBackground = this.add.tileSprite(width / 2, height / 2, width * 1.5, height * 1.5, "gameBackground");
     this.gameBackground.setOrigin(0.5, 0.5);
     this.gameBackground.setScale(0.75); // Zoom out to see more of the background
     this.gameBackground.tilePositionY = 55; // Shift the texture up to show different part of image
     
-
 
     // Create the player sprite
     this.player = this.physics.add.sprite(200, height - 200, 'player');
@@ -40,12 +41,9 @@ class GameScene extends Phaser.Scene {
     // Player stays in place - background moves instead
     this.player.setVelocityX(0);
     
-    // Debug: log player position and visibility
-    console.log('Player created at:', this.player.x, this.player.y);
-    console.log('Player velocity:', this.player.body.velocity.x, this.player.body.velocity.y);
-    console.log('Player body:', this.player.body);
+    // --- Music Toggle Button ---
+    this.musicButton = MusicManager.createMusicButton(this, width - 20, 20);
   }
-
   update(){
     // Scroll the background to create running effect
     this.gameBackground.tilePositionX += this.gameSpeed;

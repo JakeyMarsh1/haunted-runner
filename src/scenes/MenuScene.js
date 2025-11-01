@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import MusicManager from "../utils/MusicManager";
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -8,16 +9,13 @@ export default class MenuScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
+    // Initialize music manager
+    MusicManager.init(this);
+    MusicManager.setupMusic(this);
+
     // Add the background first
     const bg = this.add.image(width /2, height /2, "menuBackground").setOrigin(0.5);
     bg.setDisplaySize(width, height); // make it fill the whole screen
-
-      // Add and play background music
-    this.music = this.sound.add("menuMusic", {
-      volume: 0.5, // between 0 and 1
-      loop: true   // repeat continuously
-    });
-    // Music starts muted by default
 
 
     this.add
@@ -55,23 +53,7 @@ export default class MenuScene extends Phaser.Scene {
     });
 
    // --- Music Toggle Button ---
-   this.musicOn = false;
-   this.musicButton = this.add.text(width - 20, 20, "🔇", {
-     fontSize: "32px",
-     color: "#f8fafc",
-   })
-     .setOrigin(1, 0)
-     .setInteractive({ useHandCursor: true })
-     .on("pointerdown", () => {
-       this.musicOn = !this.musicOn;
-       if (this.musicOn) {
-         this.music.play();
-         this.musicButton.setText("🔊");
-       } else {
-         this.music.stop();
-         this.musicButton.setText("🔇");
-       }
-     });
+   this.musicButton = MusicManager.createMusicButton(this, width - 20, 20);
 
   
 
