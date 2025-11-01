@@ -7,30 +7,33 @@ import gameMusicFile from "../assets/music/haunting-spooky.mp3";
 import playerSpriteSheet from "../assets/sprites/sprite.png";
 
 export default class BootScene extends Phaser.Scene {
-  constructor() {
-    super("BootScene");
-  }
+  constructor() { super("BootScene"); }
 
   preload() {
-    
-    const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor("#000000");
 
-    // Load all game assets
+    // Images
     this.load.image("menuBackground", menuBackgroundImg);
     this.load.image("gameBackground", gameBackgroundImg);
+
+    // Audio (autoplay will still require a user gesture later)
     this.load.audio("menuMusic", menuMusicFile);
     this.load.audio("gameMusic", gameMusicFile);
 
-    // Load player spritesheet (12 frames, each 900x900 pixels)
+    // Spritesheet
     this.load.spritesheet("player", playerSpriteSheet, {
       frameWidth: 900,
       frameHeight: 900,
     });
+
+    // Transition after loader completes
+    this.load.once("complete", () => {
+
+      SceneTransition.fadeToScene(this, "MenuScene", 400);
+    });
   }
 
   create() {
-    // Start the menu scene with fade transition
-    SceneTransition.fadeToScene(this, "MenuScene", 400);
+    // No-op: create will run after preload; transition handled in the loader 'complete' callback.
   }
 }

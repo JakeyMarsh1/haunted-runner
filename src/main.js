@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import "./style/main.css";
 
 import BootScene from "./scenes/BootScene";
+import AboutScene from './scenes/AboutScene';
 import MenuScene from "./scenes/MenuScene";
 import GameScene from "./scenes/GameScene";
 
@@ -11,7 +12,7 @@ const config = {
   width: 1280,
   height: 720,
   backgroundColor: "#000000",
-  scene: [BootScene, MenuScene, GameScene],
+  scene: [BootScene, AboutScene, MenuScene, GameScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
