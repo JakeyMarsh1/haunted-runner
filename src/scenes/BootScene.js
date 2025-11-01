@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import menuBackgroundImg from "../assets/backgrounds/Background2.png";
 import gameBackgroundImg from "../assets/backgrounds/Background4.png";
 import menuMusicFile from "../assets/music/spooky-wind.mp3";
+import gameMusicFile from "../assets/music/haunting-spooky.mp3";
 import playerSpriteSheet from "../assets/sprites/sprite.png";
 
 export default class BootScene extends Phaser.Scene {
@@ -18,7 +19,8 @@ export default class BootScene extends Phaser.Scene {
     this.load.image("menuBackground", menuBackgroundImg);
     this.load.image("gameBackground", gameBackgroundImg);
     this.load.audio("menuMusic", menuMusicFile);
-    
+    this.load.audio("gameMusic", gameMusicFile);
+
     // Load player spritesheet (12 frames, each 900x900 pixels)
     this.load.spritesheet("player", playerSpriteSheet, {
       frameWidth: 900,
