@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import menuBackgroundImg from "../assets/backgrounds/Background4.png";
+import menuMusicFile from "../assets/music/spooky-wind.mp3";
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -7,8 +9,9 @@ export default class MenuScene extends Phaser.Scene {
 
   preload() {
     // Load the background image
-    this.load.image("menuBackground", "../src/assets/backgrounds/background4.png");
-   
+    this.load.image("menuBackground", menuBackgroundImg);
+   // Music or sound
+    this.load.audio("menuMusic", menuMusicFile);
   }
 
   create() {
@@ -17,6 +20,14 @@ export default class MenuScene extends Phaser.Scene {
     // Add the background first
     const bg = this.add.image(width /2, height /2, "menuBackground").setOrigin(0.5);
     bg.setDisplaySize(width, height); // make it fill the whole screen
+
+      // Add and play background music
+    this.music = this.sound.add("menuMusic", {
+      volume: 0.5, // between 0 and 1
+      loop: true   // repeat continuously
+    });
+    // Music starts muted by default
+
 
     this.add
       .text(width / 2, height * 0.28, "Haunted Runner", {
@@ -52,13 +63,38 @@ export default class MenuScene extends Phaser.Scene {
       repeat: -1,
     });
 
+   // --- Music Toggle Button ---
+   this.musicOn = false;
+   this.musicButton = this.add.text(width - 20, 20, "🔇", {
+     fontSize: "32px",
+     color: "#f8fafc",
+   })
+     .setOrigin(1, 0)
+     .setInteractive({ useHandCursor: true })
+     .on("pointerdown", () => {
+       this.musicOn = !this.musicOn;
+       if (this.musicOn) {
+         this.music.play();
+         this.musicButton.setText("🔊");
+       } else {
+         this.music.stop();
+         this.musicButton.setText("🔇");
+       }
+     });
+
+  
 
   // Input: go straight to GameScene
   this.input.keyboard.on("keydown-SPACE", () => {
+  
     this.scene.start("GameScene");
   });
 
-  this.input.on("pointerdown", () => {
+  this.input.on("pointerdown", (pointer) => {
+    // Don't start game if clicking on the music button
+    if (this.musicButton.getBounds().contains(pointer.x, pointer.y)) {
+      return;
+    }
     this.scene.start("GameScene");
   });
 }
