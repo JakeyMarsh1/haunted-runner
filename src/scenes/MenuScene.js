@@ -52,11 +52,14 @@ export default class MenuScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    this.input.keyboard.on("keydown-SPACE", () => this.pulse());
-    this.input.on("pointerdown", () => this.pulse());
-  }
 
-  pulse() {
-    this.cameras.main.flash(150, 34, 211, 255);
-  }
+  // Input: go straight to GameScene
+  this.input.keyboard.on("keydown-SPACE", () => {
+    this.scene.start("GameScene");
+  });
+
+  this.input.on("pointerdown", () => {
+    this.scene.start("GameScene");
+  });
+}
 }
