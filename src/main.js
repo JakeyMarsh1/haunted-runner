@@ -4,6 +4,7 @@ import "./style/main.css";
 import BootScene from "./scenes/BootScene";
 import AboutScene from './scenes/AboutScene';
 import MenuScene from "./scenes/MenuScene";
+import TutorialScene from "./scenes/TutorialScene";
 import GameScene from "./scenes/GameScene";
 import GameOverScene from "./scenes/GameOverScene";
 
@@ -13,7 +14,7 @@ const config = {
   width: 1280,
   height: 720,
   backgroundColor: "#000000",
-  scene: [BootScene, AboutScene, MenuScene, GameScene, GameOverScene],
+  scene: [BootScene, AboutScene, MenuScene, TutorialScene, GameScene, GameOverScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
