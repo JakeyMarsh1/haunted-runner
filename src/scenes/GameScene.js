@@ -39,6 +39,13 @@ class GameScene extends Phaser.Scene {
     this.musicEnabled = menuScene?.musicEnabled ?? true;
   }
 
+  init(data) {
+    // Get preferences from MenuScene or defaults
+    const menuScene = this.scene.get('MenuScene');
+    this.jumpscareEnabled = menuScene?.jumpscareEnabled ?? true;
+    this.musicEnabled = menuScene?.musicEnabled ?? true;
+  }
+
   preload() {
     if (!this.textures.exists('bg_l5')) this.load.image('bg_l5', bgLayer05);
 

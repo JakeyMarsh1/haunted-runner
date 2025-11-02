@@ -70,9 +70,6 @@ export default class JumpScare {
     const cam = this.scene.cameras.main;
     const { shakeDur, shakeMag, zoom, volume, invertMs } = this.opts;
 
-    // Don't trigger if game is paused
-    if (this.scene.isPaused) return;
-
     // Only play sound if music is enabled (not muted)
     const musicEnabled = this.scene.registry.get('musicEnabled');
     if (musicEnabled) {

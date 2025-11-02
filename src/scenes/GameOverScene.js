@@ -1,25 +1,51 @@
-/*
+﻿/*
   GameOverScene.js
   Purpose: Display game over screen with final score, player name input, and options to restart or view leaderboard.
   Ready for score data passed from GameScene and Supabase submission.
 */
 
 import Phaser from 'phaser';
+import {
+  submitScore,
+  sanitizeName,
+  validateName,
+  MIN_NAME_LENGTH,
+  MAX_NAME_LENGTH,
+} from '../utils/HighScoreManager';
+
+const INVALID_NAME_CHAR_REGEX = /[^A-Za-z0-9\s\-']/g;
 
 export default class GameOverScene extends Phaser.Scene {
   constructor() {
     super('GameOverScene');
+    this.nameInput = null;
+    this.nameInputHandler = null;
+    this.boundRepositionInput = null;
+    this.isSubmitting = false;
+    this.scoreSubmitted = false;
+    this.layout = {
+      promptY: 310,
+      inputY: 360,
+      submitY: 430,
+      statusY: 470,
+      actionY: 520,
+    };
   }
 
   init(data) {
     // Receive score from GameScene
-    this.finalScore = data.score || 0;
+    this.finalScore = data?.score ?? 0;
+    this.pendingName = data?.name
+      ? sanitizeName(data.name).slice(0, MAX_NAME_LENGTH)
+      : '';
     if (import.meta.env.DEV) {
-      console.log('GameOverScene init — final score:', this.finalScore);
+      console.log('GameOverScene init -> final score:', this.finalScore);
     }
   }
 
   create() {
+    const { promptY, submitY, statusY, actionY } = this.layout;
+
     // Background
     this.add.rectangle(
       this.cameras.main.centerX,
@@ -41,7 +67,7 @@ export default class GameOverScene extends Phaser.Scene {
     this.add.text(
       this.cameras.main.centerX,
       160,
-      `FINAL SCORE`,
+      'FINAL SCORE',
       { fontSize: '24px', fill: '#ffffff' }
     ).setOrigin(0.5);
 
@@ -55,23 +81,103 @@ export default class GameOverScene extends Phaser.Scene {
     // Name input prompt
     this.add.text(
       this.cameras.main.centerX,
-      310,
+      promptY,
       'Enter your name:',
       { fontSize: '18px', fill: '#ffffff' }
     ).setOrigin(0.5);
 
-    // Name input field (HTML input overlay)
-    // Acceptable character limits: 3-20 alphanumeric + spaces
-    this.nameInput = document.createElement('input');
-    this.nameInput.type = 'text';
-    this.nameInput.placeholder = 'Your name (3-20 chars)...';
-    this.nameInput.maxLength = '20';
-    this.nameInput.minLength = '3';
-    this.nameInput.style.cssText = `
-      position: absolute;
-      top: 350px;
-      left: 50%;
-      transform: translateX(-50%);
+    this.nameInput = this.createNameInputElement();
+    document.body.appendChild(this.nameInput);
+    if (this.pendingName) {
+      this.nameInput.value = this.pendingName;
+    }
+    this.nameInput.focus();
+    this.positionNameInput();
+    window.requestAnimationFrame(() => this.positionNameInput());
+    this.boundRepositionInput = () => this.positionNameInput();
+    window.addEventListener('resize', this.boundRepositionInput);
+    window.addEventListener('scroll', this.boundRepositionInput, { passive: true });
+    this.scale.on('resize', this.boundRepositionInput, this);
+
+    // Restart button
+    const restartButton = this.add.rectangle(
+      this.cameras.main.centerX - 120,
+      actionY,
+      180,
+      50,
+      0x00aa00
+    );
+    restartButton.setInteractive({ useHandCursor: true });
+    restartButton.on('pointerdown', () => this.handleRestart());
+
+    this.add.text(
+      this.cameras.main.centerX - 120,
+      actionY,
+      'RESTART',
+      { fontSize: '20px', fill: '#000', fontStyle: 'bold' }
+    ).setOrigin(0.5);
+
+    // Leaderboard button
+    const leaderboardButton = this.add.rectangle(
+      this.cameras.main.centerX + 120,
+      actionY,
+      180,
+      50,
+      0x0066ff
+    );
+    leaderboardButton.setInteractive({ useHandCursor: true });
+    leaderboardButton.on('pointerdown', () => this.handleLeaderboard());
+
+    this.add.text(
+      this.cameras.main.centerX + 120,
+      actionY,
+      'LEADERBOARD',
+      { fontSize: '20px', fill: '#fff', fontStyle: 'bold' }
+    ).setOrigin(0.5);
+
+    // Submit score button (for Supabase integration)
+    const submitButton = this.add.rectangle(
+      this.cameras.main.centerX,
+      submitY,
+      200,
+      50,
+      0xff6600
+    );
+    submitButton.setInteractive({ useHandCursor: true });
+    submitButton.on('pointerdown', () => this.handleSubmitScore());
+
+    this.add.text(
+      this.cameras.main.centerX,
+      submitY,
+      'SUBMIT SCORE',
+      { fontSize: '20px', fill: '#fff', fontStyle: 'bold' }
+    ).setOrigin(0.5);
+
+    // Submission status text (hidden until submit)
+    this.statusText = this.add
+      .text(this.cameras.main.centerX, statusY, '', {
+        fontSize: '18px',
+        fill: '#ffff00',
+      })
+      .setOrigin(0.5);
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.onSceneShutdown, this);
+    this.events.once(Phaser.Scenes.Events.DESTROY, this.onSceneShutdown, this);
+  }
+
+  createNameInputElement() {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = `Your name (${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} chars)...`;
+    input.maxLength = `${MAX_NAME_LENGTH}`;
+    input.minLength = `${MIN_NAME_LENGTH}`;
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    input.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: translate(-50%, -50%);
       width: 250px;
       padding: 10px;
       font-size: 16px;
@@ -82,146 +188,151 @@ export default class GameOverScene extends Phaser.Scene {
       text-align: center;
       z-index: 100;
     `;
-    
-    // Add input validation: allow only alphanumeric, spaces, and basic punctuation
-    this.nameInput.addEventListener('input', (e) => {
-      // Remove invalid characters (keep only letters, numbers, spaces, hyphens, apostrophes)
-      e.target.value = e.target.value.replace(/[^a-zA-Z0-9\s\-']/g, '');
-    });
-    
-    document.body.appendChild(this.nameInput);
-    this.nameInput.focus();
 
-    // Restart button
-    const restartButton = this.add.rectangle(
-      this.cameras.main.centerX - 120,
-      430,
-      180,
-      50,
-      0x00aa00
-    );
-    restartButton.setInteractive({ useHandCursor: true });
-    restartButton.on('pointerdown', () => this.handleRestart());
+    this.nameInputHandler = (event) => {
+      if (!event?.target) {
+        return;
+      }
 
-    this.add.text(
-      this.cameras.main.centerX - 120,
-      430,
-      'RESTART',
-      { fontSize: '20px', fill: '#000', fontStyle: 'bold' }
-    ).setOrigin(0.5);
+      const sanitized = sanitizeName(
+        event.target.value.replace(INVALID_NAME_CHAR_REGEX, '')
+      ).slice(0, MAX_NAME_LENGTH);
 
-    // Leaderboard button
-    const leaderboardButton = this.add.rectangle(
-      this.cameras.main.centerX + 120,
-      430,
-      180,
-      50,
-      0x0066ff
-    );
-    leaderboardButton.setInteractive({ useHandCursor: true });
-    leaderboardButton.on('pointerdown', () => this.handleLeaderboard());
+      if (event.target.value !== sanitized) {
+        event.target.value = sanitized;
+      }
 
-    this.add.text(
-      this.cameras.main.centerX + 120,
-      430,
-      'LEADERBOARD',
-      { fontSize: '20px', fill: '#fff', fontStyle: 'bold' }
-    ).setOrigin(0.5);
+      if (!this.isSubmitting && this.statusText?.text) {
+        this.statusText.setColor('#ffff00').setText('');
+      }
+    };
 
-    // Submit score button (for Supabase integration)
-    const submitButton = this.add.rectangle(
-      this.cameras.main.centerX,
-      510,
-      200,
-      50,
-      0xff6600
-    );
-    submitButton.setInteractive({ useHandCursor: true });
-    submitButton.on('pointerdown', () => this.handleSubmitScore());
+    input.addEventListener('input', this.nameInputHandler);
 
-    this.add.text(
-      this.cameras.main.centerX,
-      510,
-      'SUBMIT SCORE',
-      { fontSize: '20px', fill: '#fff', fontStyle: 'bold' }
-    ).setOrigin(0.5);
-
-    // Submission status text (hidden until submit)
-    this.statusText = this.add.text(
-      this.cameras.main.centerX,
-      580,
-      '',
-      { fontSize: '16px', fill: '#ffff00' }
-    ).setOrigin(0.5);
+    return input;
   }
 
-  handleSubmitScore() {
-    const playerName = this.nameInput.value.trim();
-
-    // Validate name: 3-20 characters, alphanumeric + spaces/hyphens/apostrophes
-    if (!playerName) {
-      this.statusText.setText('Please enter your name!');
+  positionNameInput() {
+    if (!this.nameInput) {
       return;
     }
 
-    if (playerName.length < 3) {
-      this.statusText.setText('Name too short (min 3 characters)');
+    const canvas = this.game?.canvas;
+    if (!canvas) {
       return;
     }
 
-    if (playerName.length > 20) {
-      this.statusText.setText('Name too long (max 20 characters)');
+    const rect = canvas.getBoundingClientRect();
+    const { inputY } = this.layout;
+    const camera = this.cameras?.main;
+
+    if (!rect || !camera) {
       return;
     }
 
-    // Check for valid characters (already filtered by input, but double-check)
-    if (!/^[a-zA-Z0-9\s\-']+$/.test(playerName)) {
-      this.statusText.setText('Invalid characters. Use letters, numbers, spaces, hyphens.');
+    const xRatio = camera.centerX / camera.width;
+    const yRatio = inputY / camera.height;
+
+    const left = rect.left + rect.width * xRatio;
+    const top = rect.top + rect.height * yRatio;
+
+    this.nameInput.style.left = `${left}px`;
+    this.nameInput.style.top = `${top}px`;
+  }
+
+  async handleSubmitScore() {
+    if (this.scoreSubmitted || this.isSubmitting) {
       return;
     }
 
-    // TODO: Integrate with supabase/leaderboard.js submitScore()
-    // Example:
-    // this.statusText.setText('Submitting...');
-    // supabaseLeaderboard.submitScore({ name: playerName, score: this.finalScore })
-    //   .then(() => {
-    //     this.statusText.setText('Score submitted!');
-    //   })
-    //   .catch((err) => {
-    //     this.statusText.setText('Submission failed. Score queued locally.');
-    //   });
+    if (!this.nameInput) {
+      this.statusText.setText('Name input unavailable.');
+      return;
+    }
+
+    const sanitizedName = sanitizeName(this.nameInput.value).slice(0, MAX_NAME_LENGTH);
+    this.nameInput.value = sanitizedName;
+
+    const validation = validateName(sanitizedName);
+    if (!validation.valid) {
+      this.statusText.setColor('#ff3333').setText(validation.message);
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.statusText.setColor('#ffff00').setText('Submitting score...');
 
     if (import.meta.env.DEV) {
-      console.log('Submit score:', { name: playerName, score: this.finalScore });
+      console.log('[GameOverScene] submitting score', {
+        name: sanitizedName,
+        score: this.finalScore,
+      });
     }
 
-    this.statusText.setText('Score submitted! (TODO: integrate Supabase)');
+    const result = await submitScore({ name: sanitizedName, score: this.finalScore });
+
+    if (result.success) {
+      this.statusText.setColor('#00ff66').setText('Score submitted!');
+      this.scoreSubmitted = true;
+      this.nameInput.disabled = true;
+    } else {
+      this.statusText
+        .setColor('#ff3333')
+        .setText(result.error || 'Submission failed. Please try again later.');
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('[GameOverScene] submission result', result);
+    }
+
+    this.isSubmitting = false;
   }
 
   handleRestart() {
-    // Clean up input
-    if (this.nameInput && this.nameInput.parentNode) {
-      this.nameInput.parentNode.removeChild(this.nameInput);
-    }
-
-    // Restart GameScene
+    this.cleanupNameInput();
+    this.isSubmitting = false;
+    this.scoreSubmitted = false;
     this.scene.start('GameScene');
   }
 
   handleLeaderboard() {
-    // Clean up input
-    if (this.nameInput && this.nameInput.parentNode) {
-      this.nameInput.parentNode.removeChild(this.nameInput);
-    }
-
-    // Transition to HighScoreScene
-    this.scene.start('HighScoreScene');
+    const pendingName = this.nameInput
+      ? sanitizeName(this.nameInput.value).slice(0, MAX_NAME_LENGTH)
+      : '';
+    this.cleanupNameInput();
+    this.isSubmitting = false;
+    this.scoreSubmitted = false;
+    this.scene.start('HighScoreScene', {
+      score: this.finalScore,
+      name: pendingName,
+    });
   }
 
-  shutdown() {
-    // Clean up input on scene shutdown
-    if (this.nameInput && this.nameInput.parentNode) {
-      this.nameInput.parentNode.removeChild(this.nameInput);
+  cleanupNameInput() {
+    if (this.boundRepositionInput) {
+      window.removeEventListener('resize', this.boundRepositionInput);
+      window.removeEventListener('scroll', this.boundRepositionInput);
+      this.scale.off('resize', this.boundRepositionInput, this);
+      this.boundRepositionInput = null;
     }
+
+    if (this.nameInput) {
+      if (this.nameInputHandler) {
+        this.nameInput.removeEventListener('input', this.nameInputHandler);
+        this.nameInputHandler = null;
+      }
+
+      if (this.nameInput.parentNode) {
+        this.nameInput.parentNode.removeChild(this.nameInput);
+      }
+
+      this.nameInput = null;
+    }
+  }
+
+  onSceneShutdown() {
+    this.cleanupNameInput();
+    this.isSubmitting = false;
+    this.scoreSubmitted = false;
   }
 }
