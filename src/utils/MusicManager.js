@@ -1,3 +1,6 @@
+﻿const MUSIC_ICON_ON = "🔊";
+const MUSIC_ICON_OFF = "🔇";
+
 export default class MusicManager {
   static init(scene) {
     // Initialize music state in registry if not exists
@@ -54,9 +57,9 @@ export default class MusicManager {
     return newState;
   }
 
-  static createMusicButton(scene, x, y) {
+  static createMusicButton(scene, x, y, iconOn = MUSIC_ICON_ON, iconOff = MUSIC_ICON_OFF) {
     const musicEnabled = scene.registry.get('musicEnabled');
-    const icon = musicEnabled ? "🔊" : "🔇";
+    const icon = musicEnabled ? iconOn : iconOff;
     
     const button = scene.add.text(x, y, icon, {
       fontSize: "32px",
@@ -68,7 +71,7 @@ export default class MusicManager {
     
     button.on("pointerdown", () => {
       const newState = MusicManager.toggleMusic(scene);
-      button.setText(newState ? "🔊" : "🔇");
+      button.setText(newState ? iconOn : iconOff);
     });
     
     return button;
@@ -78,4 +81,3 @@ export default class MusicManager {
     return scene.registry.get('musicEnabled');
   }
 }
-
