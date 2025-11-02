@@ -15,7 +15,7 @@ const config = {
   width: 1280,
   height: 720,
   backgroundColor: "#000000",
-  scene: [BootScene, AboutScene, MenuScene, GameScene, PauseScene, GameOverScene],
+  scene: [BootScene, AboutScene, MenuScene, GameScene, PauseScene, GameOverScene, TutorialScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
