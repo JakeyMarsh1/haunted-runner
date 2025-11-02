@@ -1,4 +1,4 @@
-﻿import Phaser from "phaser";
+import Phaser from "phaser";
 import SceneTransition from "../utils/SceneTransition";
 import menuBackgroundImg from "../assets/backgrounds/Background2.png";
 import gameBackgroundImg from "../assets/backgrounds/Background4.png";
