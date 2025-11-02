@@ -41,6 +41,9 @@ export default class Obstacle {
       console.log('Obstacle (Zombie Hand) created at:', x, y);
     }
   }  update(moveDistance) {
+    // Don't update when paused
+    if (this.scene.isPaused) return;
+    
     // Move LEFT 
     this.sprite.x -= moveDistance;
     this.sprite.body.updateFromGameObject();

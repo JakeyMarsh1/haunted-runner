@@ -27,6 +27,16 @@ class GameScene extends Phaser.Scene {
     // Scoring system
     this.distanceTraveled = 0; // Track total distance in pixels
     this.score = 0; // Simple score based on distance
+    
+    // Pause state (don't pause scene, use flag instead to avoid AudioContext issues)
+    this.isPaused = false;
+  }
+
+  init(data) {
+    // Get preferences from MenuScene or defaults
+    const menuScene = this.scene.get('MenuScene');
+    this.jumpscareEnabled = menuScene?.jumpscareEnabled ?? true;
+    this.musicEnabled = menuScene?.musicEnabled ?? true;
   }
 
   init(data) {
@@ -141,6 +151,47 @@ class GameScene extends Phaser.Scene {
     this.musicButton = MusicManager.createMusicButton(this, W - 20, 20);
     this.setupJumpControls();
 
+    // --- Settings Button (Pause) ---
+    const settingsButton = this.add.text(W - 90, 32, '⚙️', {
+      fontSize: '28px',
+      fontFamily: 'Arial'
+    })
+      .setOrigin(0.5, 0.5)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(100);
+
+    settingsButton.on('pointerover', () => {
+      settingsButton.setScale(1.2);
+    });
+
+    settingsButton.on('pointerout', () => {
+      settingsButton.setScale(1.0);
+    });
+
+    settingsButton.on('pointerdown', () => {
+      this.isPaused = true;
+      this.pauseAnimations();
+      this.scene.launch('PauseScene');
+    });
+
+    // P key to pause/unpause
+    this.input.keyboard.on('keydown-P', () => {
+      if (this.isPaused) {
+        // Unpause
+        this.isPaused = false;
+        this.resumeAnimations();
+        this.scene.stop('PauseScene');
+      } else {
+        // Pause
+        this.isPaused = true;
+        this.pauseAnimations();
+        this.scene.launch('PauseScene');
+      }
+    });
+
+    this.setupJumpControls();
+
     // --- Score Display HUD ---
     this.distanceTraveled = 0; // Initialize here as well
     this.score = 0; // Initialize here as well
@@ -199,8 +250,46 @@ class GameScene extends Phaser.Scene {
     this.input.on('pointerup', release);
   }
 
+  pauseAnimations() {
+    // Disable input
+    this.input.enabled = false;
+    
+    // Pause all sprite animations
+    this.player.anims.pause();
+    this.obstacles.forEach(obs => {
+      if (obs.sprite && obs.sprite.anims) {
+        obs.sprite.anims.pause();
+      }
+    });
+    
+    // Pause jumpscare animations if active
+    if (this.jumpScare) {
+      this.jumpScare.pauseAnimations();
+    }
+  }
+
+  resumeAnimations() {
+    // Enable input
+    this.input.enabled = true;
+    
+    // Resume all sprite animations
+    this.player.anims.resume();
+    this.obstacles.forEach(obs => {
+      if (obs.sprite && obs.sprite.anims) {
+        obs.sprite.anims.resume();
+      }
+    });
+    
+    // Resume jumpscare animations
+    if (this.jumpScare) {
+      this.jumpScare.resumeAnimations();
+    }
+  }
+
   update(_t, delta) {
     if (this.parallax.length === 0) return;
+    if (this.isPaused) return; // Don't update game when paused
+    
     const base = (this.gameSpeed * delta) / 1000;
     const backgroundMove = base * this.backgroundSpeedMultiplier;
     const obstacleMove = base * this.obstacleSpeedMultiplier;
@@ -262,6 +351,7 @@ class GameScene extends Phaser.Scene {
     // Random spawn interval between 3 and 5 seconds (farther apart)
     return Phaser.Math.Between(3000, 5000);
   }
+
 }
 
 export default GameScene;

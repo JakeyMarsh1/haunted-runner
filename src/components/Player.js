@@ -61,6 +61,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
   preUpdate(time, delta) {
     super.preUpdate(time, delta);
+    
+    // Don't update when paused
+    if (this.scene.isPaused) return;
 
     // Clamp fall speed
     if (this.body.velocity.y > Player.MAX_FALL) {
