@@ -36,13 +36,19 @@ export default class MusicManager {
     scene.registry.set('musicEnabled', newState);
     
     if (newState) {
+      // Unmute: set mute flag to false and resume all sounds
+      scene.sound.mute = false;
       if (scene.music && !scene.music.isPlaying) {
         scene.music.play();
       }
+      scene.sound.resumeAll();
     } else {
+      // Mute: set mute flag to true and pause all sounds
+      scene.sound.mute = true;
       if (scene.music && scene.music.isPlaying) {
         scene.music.stop();
       }
+      scene.sound.pauseAll();
     }
     
     return newState;

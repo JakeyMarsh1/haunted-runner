@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import MusicManager from "../utils/MusicManager";
 import SceneTransition from "../utils/SceneTransition";
+import ConsentModal from "../utils/ConsentModal";
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -12,10 +13,6 @@ export default class MenuScene extends Phaser.Scene {
 
     // Fade in
     SceneTransition.setupFadeIn(this, 800);
-
-    // Music
-    MusicManager.init(this);
-    MusicManager.setupMusic(this);
 
     // Background
     const bg = this.add.image(width / 2, height / 2, "menuBackground").setOrigin(0.5);
@@ -40,6 +37,14 @@ export default class MenuScene extends Phaser.Scene {
         color: "#cbd5f5",
       })
       .setOrigin(0.5);
+
+    // Flag to prevent click-to-start while modal is being closed
+    this.consentModalOpen = true;
+
+    // Show consent modal overlay on top of menu
+    new ConsentModal(this, (preferences) => {
+      this.handleConsentComplete(preferences);
+    });
 
     // Ensure a reusable button texture exists
     this.#ensureButtonTexture();
@@ -76,11 +81,40 @@ export default class MenuScene extends Phaser.Scene {
     });
     aboutBtn.on("pointerup", () => {
       aboutBtn.clearTint();
+      // Don't navigate if consent modal just closed
+      if (this.consentModalOpen) return;
       SceneTransition.fadeToScene(this, "AboutScene", 600);
     });
 
     // --- Music Toggle Button ---
     this.musicButton = MusicManager.createMusicButton(this, width - 20, 20);
+
+    // --- Settings Button ---
+    const settingsButton = this.add.text(width - 90, 32, '⚙️', {
+      fontSize: '28px',
+      fontFamily: 'Arial'
+    })
+      .setOrigin(0.5, 0.5)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(100);
+
+    settingsButton.on('pointerover', () => {
+      settingsButton.setScale(1.2);
+    });
+
+    settingsButton.on('pointerout', () => {
+      settingsButton.setScale(1.0);
+    });
+
+    settingsButton.on('pointerdown', () => {
+      if (this.consentModalOpen) return;
+      // Reopen consent modal
+      this.consentModalOpen = true;
+      new ConsentModal(this, (preferences) => {
+        this.handleConsentComplete(preferences);
+      });
+    });
 
     // Start game via keyboard
     this.input.keyboard.on("keydown-SPACE", () => {
@@ -89,6 +123,9 @@ export default class MenuScene extends Phaser.Scene {
 
     // Start game via click/tap anywhere EXCEPT About button or Music button
     this.input.on("pointerdown", (pointer) => {
+      // Don't start game if consent modal is visible or just closed
+      if (this.consentModalOpen) return;
+
       const p = new Phaser.Math.Vector2(pointer.x, pointer.y);
       const overMusic = this.musicButton.getBounds().contains(p.x, p.y);
       const overAbout = aboutBtn.getBounds().contains(p.x, p.y) || aboutLabel.getBounds().contains(p.x, p.y);
@@ -112,5 +149,39 @@ export default class MenuScene extends Phaser.Scene {
     g.fillRoundedRect(0, h - 10, w, 10, { tl: 0, tr: 0, br: r, bl: r });
     g.generateTexture("ui-btn", w, h);
     g.destroy();
+  }
+
+  handleConsentComplete(preferences) {
+    // Save preferences for use in GameScene
+    this.jumpscareEnabled = preferences.jumpscareEnabled;
+    this.musicEnabled = preferences.musicEnabled;
+
+    // Setup music with saved preference
+    MusicManager.init(this);
+    
+    const currentMusicState = MusicManager.getMusicState(this);
+    
+    // If user enabled music and it's currently disabled, enable it
+    if (preferences.musicEnabled && !currentMusicState) {
+      MusicManager.setupMusic(this, 'menuMusic');
+      MusicManager.toggleMusic(this); // Toggle to enable
+    } 
+    // If user disabled music and it's currently enabled, disable it
+    else if (!preferences.musicEnabled && currentMusicState) {
+      MusicManager.toggleMusic(this); // Toggle to disable
+    }
+    // If not currently playing, setup the music
+    else if (preferences.musicEnabled && !this.music?.isPlaying) {
+      MusicManager.setupMusic(this, 'menuMusic');
+    }
+
+    // Update the music button icon to reflect current state
+    const newMusicState = MusicManager.getMusicState(this);
+    this.musicButton.setText(newMusicState ? "🔊" : "🔇");
+
+    // Allow click-to-start after a small delay to prevent the continue click from triggering game start
+    this.time.delayedCall(200, () => {
+      this.consentModalOpen = false;
+    });
   }
 }

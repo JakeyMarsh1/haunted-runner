@@ -29,6 +29,13 @@ class GameScene extends Phaser.Scene {
     this.score = 0; // Simple score based on distance
   }
 
+  init(data) {
+    // Get preferences from MenuScene or defaults
+    const menuScene = this.scene.get('MenuScene');
+    this.jumpscareEnabled = menuScene?.jumpscareEnabled ?? true;
+    this.musicEnabled = menuScene?.musicEnabled ?? true;
+  }
+
   preload() {
     if (!this.textures.exists('bg_l5')) this.load.image('bg_l5', bgLayer05);
 
@@ -90,8 +97,17 @@ class GameScene extends Phaser.Scene {
 
     this.jumpScare = new JumpScare(this, { invertMs: 1200 });
     this.controlsInverted = false;
-    this.jumpScare.startAuto({ min: 12, max: 24 });
-    this.input.keyboard.on('keydown-J', () => this.jumpScare.trigger()); // Remove later!
+    
+    // Only enable jump scares if user consented
+    if (this.jumpscareEnabled) {
+      this.jumpScare.startAuto({ min: 12, max: 24 });
+    }
+    
+    this.input.keyboard.on('keydown-J', () => {
+      if (this.jumpscareEnabled) {
+        this.jumpScare.trigger();
+      }
+    }); // Remove later!
 
     // --- Ground / Player ---
     const FLOOR_Y = H - 112;
