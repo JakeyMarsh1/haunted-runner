@@ -4,6 +4,7 @@ import "./style/main.css";
 import BootScene from "./scenes/BootScene";
 import AboutScene from './scenes/AboutScene';
 import MenuScene from "./scenes/MenuScene";
+import TutorialScene from "./scenes/TutorialScene";
 import GameScene from "./scenes/GameScene";
 import PauseScene from "./scenes/PauseScene";
 import GameOverScene from "./scenes/GameOverScene";
