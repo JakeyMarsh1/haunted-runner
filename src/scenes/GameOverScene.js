@@ -48,7 +48,7 @@ export default class GameOverScene extends Phaser.Scene {
     this.add.text(
       this.cameras.main.centerX,
       220,
-      `${this.finalScore}`,
+      `${Math.floor(this.finalScore).toLocaleString()}`,
       { fontSize: '64px', fill: '#00ff00', fontStyle: 'bold' }
     ).setOrigin(0.5);
 
