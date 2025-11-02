@@ -14,10 +14,10 @@ const TEAM = [
             { label: 'LinkedIn', url: 'https://example.com' }] },
   { key: 'avatar_soumya',   name: 'Soumya',   role: 'Documentation',
     links: [{ label: 'GitHub', url: 'https://github.com/example3' },
-            { label: 'LinkedIn', url: 'https://example.com' }] },
+            { label: 'LinkedIn', url: 'https://www.linkedin.com/in/soumya-sharma-a34b76374/' }] },
   { key: 'avatar_karolis',  name: 'Karolis',  role: 'Emotional Support',
-    links: [{ label: 'GitHub', url: 'https://github.com/example4' },
-            { label: 'LinkedIn', url: 'https://example.com' }] },
+    links: [{ label: 'GitHub', url: 'https://github.com/kpetrauskas92' },
+            { label: 'LinkedIn', url: 'https://www.linkedin.com/in/pkarolisdev/' }] },
 ];
 
 const AVATAR_ASSETS = [
