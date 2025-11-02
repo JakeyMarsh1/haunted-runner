@@ -5,6 +5,9 @@ import gameBackgroundImg from "../assets/backgrounds/Background4.png";
 import menuMusicFile from "../assets/music/spooky-wind.mp3";
 import gameMusicFile from "../assets/music/haunting-spooky.mp3";
 import skullyRunningSpriteSheet from "../assets/sprites/skully_running.png";
+import skullyJumpStartSpriteSheet from "../assets/sprites/skully_jump_start.png";
+import skullyInAirSpriteSheet from "../assets/sprites/skully_inair.png";
+import skullyFallingSpriteSheet from "../assets/sprites/skully_falling.png";
 import scream1 from '../assets/audio/jumpscare-1.mp3';
 import scream2 from '../assets/audio/jumpscare-2.mp3';
 
@@ -46,6 +49,22 @@ export default class BootScene extends Phaser.Scene {
 
     // Skully Running Spritesheet (12 frames, 900x900 each)
     this.load.spritesheet("player", skullyRunningSpriteSheet, {
+      frameWidth: 900,
+      frameHeight: 900,
+    });
+
+    // Skully Jump Animations (6 frames each, 900x900 each)
+    this.load.spritesheet("skullyJumpStart", skullyJumpStartSpriteSheet, {
+      frameWidth: 900,
+      frameHeight: 900,
+    });
+
+    this.load.spritesheet("skullyInAir", skullyInAirSpriteSheet, {
+      frameWidth: 900,
+      frameHeight: 900,
+    });
+
+    this.load.spritesheet("skullyFalling", skullyFallingSpriteSheet, {
       frameWidth: 900,
       frameHeight: 900,
     });
