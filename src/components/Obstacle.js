@@ -8,28 +8,39 @@ import Phaser from 'phaser';
 
 export default class Obstacle {
   constructor(scene, x, y) {
-    // Create a visual obstacle using a circle as placeholder
-    // TODO: Replace with pumpkin sprite when asset is ready
-    this.sprite = scene.add.circle(x, y, 15, 0xff6600); // Smaller radius for smaller hitbox
+    // Create zombie hand sprite with animation
+    this.sprite = scene.add.sprite(x, y - 25, 'zombieHand', 0);
+    this.sprite.setScale(3); // Slightly larger
     
-    // Add physics body for collision detection ONLY
+    // Randomly mirror the sprite
+    if (Math.random() > 0.5) {
+      this.sprite.setFlipX(true);
+    }
+    
+    // Add physics body for collision detection
     scene.physics.add.existing(this.sprite);
     this.sprite.body.setImmovable(true);
     this.sprite.body.setAllowGravity(false);
     this.sprite.body.setVelocity(0, 0);
     
-    // CRITICAL: Disable physics movement - we move manually
+    // Reduce hitbox to match image size
+    this.sprite.body.setSize(2, 4); // Ultra-thin hitbox
+    
+    // Disable physics movement - we move manually
     this.sprite.body.moves = false;
 
     this.scene = scene;
-    this.sprite.setDepth(50);
+    this.sprite.setDepth(99);
+    
+    // Play animation if it exists
+    if (scene.anims.exists('zombieHandAnim')) {
+      this.sprite.play('zombieHandAnim');
+    }
 
     if (import.meta.env.DEV) {
-      console.log('Obstacle created at:', x, y);
+      console.log('Obstacle (Zombie Hand) created at:', x, y);
     }
-  }
-
-  update(moveDistance) {
+  }  update(moveDistance) {
     // Move LEFT 
     this.sprite.x -= moveDistance;
     this.sprite.body.updateFromGameObject();

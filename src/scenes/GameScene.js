@@ -43,6 +43,16 @@ class GameScene extends Phaser.Scene {
     SceneTransition.setupFadeIn(this, 800);
     MusicManager.setupMusic(this, 'gameMusic');
 
+    // Create zombie hand animation if it doesn't exist
+    if (!this.anims.exists('zombieHandAnim')) {
+      this.anims.create({
+        key: 'zombieHandAnim',
+        frames: this.anims.generateFrameNumbers('zombieHand', { start: 0, end: 24 }), // 25 frames total
+        frameRate: 10,
+        repeat: -1,
+      });
+    }
+
     // --- L5 only, fit-to-height, full-width tile area (no side gaps) ---
     const src = this.textures.get('bg_l5').getSourceImage();
     const scaleFitH = H / src.height;                  // 720/768 = 0.9375

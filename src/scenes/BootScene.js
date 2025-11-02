@@ -17,6 +17,7 @@ import L6 from '../assets/backgrounds/parallax/Spooky_Cemetery_Layer_06.png';
 import L7 from '../assets/backgrounds/parallax/Spooky_Cemetery_Layer_07.png';
 import L8 from '../assets/backgrounds/parallax/Spooky_Cemetery_Layer_08.png';
 import L9 from '../assets/backgrounds/parallax/Spooky_Cemetery_Layer_09.png';
+import zombieHandSprite from '../assets/sprites/ZombieHand.png';
 
 export default class BootScene extends Phaser.Scene {
   constructor() { super("BootScene"); }
@@ -47,6 +48,12 @@ export default class BootScene extends Phaser.Scene {
     this.load.spritesheet("player", playerSpriteSheet, {
       frameWidth: 900,
       frameHeight: 900,
+    });
+
+    // Zombie hand spritesheet (800x32, 25 frames of 32x32)
+    this.load.spritesheet("zombieHand", zombieHandSprite, {
+      frameWidth: 32,
+      frameHeight: 32,
     });
 
     // Transition after loader completes
