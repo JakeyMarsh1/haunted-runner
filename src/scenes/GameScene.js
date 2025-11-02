@@ -23,6 +23,10 @@ class GameScene extends Phaser.Scene {
     this.gameSpeed = 340;
     this.backgroundSpeedMultiplier = 2.0; // Even faster background
     this.obstacleSpeedMultiplier = 0.8; // Slightly faster obstacles
+    
+    // Scoring system
+    this.distanceTraveled = 0; // Track total distance in pixels
+    this.score = 0; // Simple score based on distance
   }
 
   preload() {
@@ -120,6 +124,18 @@ class GameScene extends Phaser.Scene {
 
     this.musicButton = MusicManager.createMusicButton(this, W - 20, 20);
     this.setupJumpControls();
+
+    // --- Score Display HUD ---
+    this.distanceTraveled = 0; // Initialize here as well
+    this.score = 0; // Initialize here as well
+    this.scoreText = this.add.text(20, 20, 'Score: 0', {
+      fontSize: '32px',
+      fill: '#00ff00',
+      fontStyle: 'bold',
+      fontFamily: 'Arial'
+    });
+    this.scoreText.setScrollFactor(0); // Fixed to camera, doesn't scroll
+    this.scoreText.setDepth(200); // Above all game objects
   }
 
   // Helper: adds a strip using the same fit-to-height strategy and centered texture
@@ -172,6 +188,16 @@ class GameScene extends Phaser.Scene {
     const base = (this.gameSpeed * delta) / 1000;
     const backgroundMove = base * this.backgroundSpeedMultiplier;
     const obstacleMove = base * this.obstacleSpeedMultiplier;
+    
+    // Track distance and calculate score (10% speed: 1 pixel = 0.1 points)
+    const distanceThisFrame = backgroundMove;
+    this.distanceTraveled += distanceThisFrame;
+    this.score = Math.floor(this.distanceTraveled * 0.1); // Score = distance * 10%
+    
+    // Update score display
+    if (this.scoreText) {
+      this.scoreText.setText(`Score: ${this.score.toLocaleString()}`);
+    }
     
     // Move background layers
     for (const l of this.parallax) {
