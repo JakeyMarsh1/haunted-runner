@@ -57,7 +57,11 @@ export default class Obstacle {
       console.log('Obstacle collision with player!');
     }
 
-    // Trigger game over
-    this.scene.scene.start('GameOverScene', { score: this.scene.score || 0 });
+    // Trigger game over and pass score + preferences
+    this.scene.scene.start('GameOverScene', { 
+      score: this.scene.score || 0,
+      jumpscareEnabled: this.scene.jumpscareEnabled,
+      musicEnabled: this.scene.musicEnabled
+    });
   }
 }

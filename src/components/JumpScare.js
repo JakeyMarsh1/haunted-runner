@@ -56,8 +56,12 @@ export default class JumpScare {
     const cam = this.scene.cameras.main;
     const { shakeDur, shakeMag, zoom, volume, invertMs } = this.opts;
 
-    const key = Phaser.Utils.Array.GetRandom(this.sfxKeys);
-    if (key) this.scene.sound.play(key, { volume });
+    // Only play sound if music is enabled (not muted)
+    const musicEnabled = this.scene.registry.get('musicEnabled');
+    if (musicEnabled) {
+      const key = Phaser.Utils.Array.GetRandom(this.sfxKeys);
+      if (key) this.scene.sound.play(key, { volume });
+    }
 
     cam.shake(shakeDur, shakeMag);
     cam.zoomTo(zoom, 120, 'Quad.easeOut', true, (_c, _p, done) => {
