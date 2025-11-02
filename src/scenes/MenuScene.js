@@ -79,7 +79,7 @@ export default class MenuScene extends Phaser.Scene {
     
     typewriter.init(this, {
       x: width / 2,
-      y: contentY,
+      y: contentY - 20,
       fontFamily: 'Inter, sans-serif',
       fontSize: 22,
       maxWidth: width - 140,
@@ -158,104 +158,49 @@ export default class MenuScene extends Phaser.Scene {
 
     // Title
     this.add
-      .text(width / 2, height * 0.28, "Haunted Runner", {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "46px",
-        fontStyle: "900",
-        color: "#f8fafc",
+      .text(width / 2, height * 0.25, "Haunted Runner", {
+        fontFamily: '"Creepster", cursive',
+        fontSize: "56px",
+        color: "#ff6600",
+        stroke: "#000000",
+        strokeThickness: 5,
         align: "center",
       })
       .setOrigin(0.5);
 
-    // Instructions
+    // Subtitle hint
     this.add
-      .text(width / 2, height * 0.45, "Tap or press SPACE to begin", {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "20px",
+      .text(width / 2, height * 0.37, "Choose your path...", {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: "18px",
         color: "#cbd5f5",
+        fontStyle: "italic",
       })
       .setOrigin(0.5);
 
-    // Tutorial Button
-    const tutorialBtn = this.add.text(width / 2, height * 0.55, "📖 Tutorial", {
-      fontFamily: '"Creepster", cursive',
-      fontSize: "28px",
-      color: "#fde68a",
-      stroke: "#000000",
-      strokeThickness: 3,
-    })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+    // --- Button 1: Start Game ---
+    const startBtn = this.createMenuButton(width / 2, height * 0.48, "🎃 Start Game");
+    startBtn.on("pointerup", () => {
+      if (this.consentModalOpen) return;
+      SceneTransition.fadeToScene(this, "GameScene", 600);
+    });
 
-    // Hover/press effects for tutorial button
-    tutorialBtn.on("pointerover", () => {
-      tutorialBtn.setColor("#ffffff");
-      tutorialBtn.setScale(1.1);
-    });
-    
-    tutorialBtn.on("pointerout", () => {
-      tutorialBtn.setColor("#fde68a");
-      tutorialBtn.setScale(1.0);
-    });
-    
-    tutorialBtn.on("pointerdown", () => {
-      tutorialBtn.setScale(0.95);
-    });
-    
+    // --- Button 2: Tutorial ---
+    const tutorialBtn = this.createMenuButton(width / 2, height * 0.58, "📖 Tutorial");
     tutorialBtn.on("pointerup", () => {
-      tutorialBtn.setScale(1.1);
-      // Don't navigate if consent modal is open
       if (this.consentModalOpen) return;
       SceneTransition.fadeToScene(this, "TutorialScene", 600);
     });
 
-    // Flag to prevent click-to-start while modal is being closed
-    this.consentModalOpen = true;
-
-    // Show consent modal overlay on top of menu
-    new ConsentModal(this, (preferences) => {
-      this.handleConsentComplete(preferences);
-    });
-
-    // Ensure a reusable button texture exists
-    this.#ensureButtonTexture();
-
-    // --- About Button (real button: rounded rect + label) ---
-    const btnY = height * 0.68;
-    const aboutBtn = this.add.image(width / 2, btnY, "ui-btn").setOrigin(0.5);
-    const aboutLabel = this.add
-      .text(width / 2, btnY, "About the Team", {
-        fontFamily: '"Creepster", cursive',
-        fontSize: "32px",
-        color: "#f87171",
-        stroke: "#000000",
-        strokeThickness: 3,
-      })
-      .setOrigin(0.5);
-
-    // Make the button interactive (use the image as the hit area)
-    aboutBtn.setInteractive({ useHandCursor: true });
-
-    // Hover/press effects
-    aboutBtn.on("pointerover", () => {
-      aboutBtn.setTint(0x222222);
-      aboutLabel.setColor("#ffffff");
-      aboutLabel.setScale(1.05);
-    });
-    aboutBtn.on("pointerout", () => {
-      aboutBtn.clearTint();
-      aboutLabel.setColor("#f87171");
-      aboutLabel.setScale(1.0);
-    });
-    aboutBtn.on("pointerdown", () => {
-      aboutBtn.setTint(0x111111);
-    });
+    // --- Button 3: About Us ---
+    const aboutBtn = this.createMenuButton(width / 2, height * 0.68, "👥 About the team");
     aboutBtn.on("pointerup", () => {
-      aboutBtn.clearTint();
-      // Don't navigate if consent modal just closed
       if (this.consentModalOpen) return;
       SceneTransition.fadeToScene(this, "AboutScene", 600);
     });
+
+    // Store button references
+    this.menuButtons = [startBtn, tutorialBtn, aboutBtn];
 
     // --- Music Toggle Button ---
     this.musicButton = MusicManager.createMusicButton(this, width - 20, 20);
@@ -287,41 +232,50 @@ export default class MenuScene extends Phaser.Scene {
       });
     });
 
-    // Start game via keyboard
+    // Flag to prevent click-to-start while modal is being closed
+    this.consentModalOpen = true;
+
+    // Show consent modal overlay on top of menu
+    new ConsentModal(this, (preferences) => {
+      this.handleConsentComplete(preferences);
+    });
+
+    // Keyboard shortcut - SPACE to start game
     this.input.keyboard.on("keydown-SPACE", () => {
-      SceneTransition.fadeToScene(this, "GameScene", 600);
-    });
-
-    // Start game via click/tap anywhere EXCEPT About, Tutorial, or Music buttons
-    this.input.on("pointerdown", (pointer) => {
-      // Don't start game if consent modal is visible or just closed
       if (this.consentModalOpen) return;
-
-      const p = new Phaser.Math.Vector2(pointer.x, pointer.y);
-      const overMusic = this.musicButton.getBounds().contains(p.x, p.y);
-      const overAbout = aboutBtn.getBounds().contains(p.x, p.y) || aboutLabel.getBounds().contains(p.x, p.y);
-      const overTutorial = tutorialBtn.getBounds().contains(p.x, p.y);
-      if (overMusic || overAbout || overTutorial) return;
       SceneTransition.fadeToScene(this, "GameScene", 600);
     });
   }
 
-  #ensureButtonTexture() {
-    if (this.textures.exists("ui-btn")) return;
-    const w = 280, h = 64, r = 18;
-    const g = this.make.graphics({ x: 0, y: 0, add: false });
-    // base
-    g.fillStyle(0x0f172a, 1);
-    g.fillRoundedRect(0, 0, w, h, r);
-    // inner highlight
-    g.lineStyle(2, 0x1f2937, 1);
-    g.strokeRoundedRect(1, 1, w - 2, h - 2, r - 2);
-    // subtle bottom glow
-    g.fillStyle(0x111827, 1);
-    g.fillRoundedRect(0, h - 10, w, 10, { tl: 0, tr: 0, br: r, bl: r });
-    g.generateTexture("ui-btn", w, h);
-    g.destroy();
+  createMenuButton(x, y, text) {
+    const button = this.add.text(x, y, text, {
+      fontFamily: '"Creepster", cursive',
+      fontSize: "38px",
+      color: "#fde68a",
+      stroke: "#000000",
+      strokeThickness: 4,
+    })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+
+    // Hover effects
+    button.on("pointerover", () => {
+      button.setColor("#ffffff");
+      button.setScale(1.1);
+    });
+
+    button.on("pointerout", () => {
+      button.setColor("#fde68a");
+      button.setScale(1.0);
+    });
+
+    button.on("pointerdown", () => {
+      button.setScale(0.95);
+    });
+
+    return button;
   }
+
 
   handleConsentComplete(preferences) {
     // Save preferences for use in GameScene
