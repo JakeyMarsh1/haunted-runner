@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import MusicManager from "../utils/MusicManager";
 import SceneTransition from "../utils/SceneTransition";
 import ConsentModal from "../utils/ConsentModal";
+import Typewriter from '../utils/Typewriter';
+
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -17,6 +19,142 @@ export default class MenuScene extends Phaser.Scene {
     // Background
     const bg = this.add.image(width / 2, height / 2, "menuBackground").setOrigin(0.5);
     bg.setDisplaySize(width, height);
+    
+    // Check if user has seen the story intro
+    const hasSeenStory = this.registry.get('hasSeenStory');
+    
+    if (!hasSeenStory) {
+      // Show story intro first
+      this.showStoryIntro();
+      return; // Exit early, will rebuild menu after story
+    }
+    
+    // Build normal menu
+    this.buildMenu();
+  }
+
+  showStoryIntro() {
+    const { width, height } = this.scale;
+
+    // Semi-transparent overlay
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.7).setOrigin(0.5);
+
+    // Story content container
+    const contentY = height * 0.3;
+    const contentBg = this.add.rectangle(
+      width / 2,
+      contentY + 120,
+      width - 80,
+      height * 0.5,
+      0x1f2937,
+      0.9
+    ).setOrigin(0.5).setDepth(9);
+
+    // Add border to content box
+    const graphics = this.add.graphics();
+    graphics.lineStyle(3, 0xff6600, 1);
+    graphics.strokeRoundedRect(
+      40,
+      contentY + 120 - (height * 0.5) / 2,
+      width - 80,
+      height * 0.5,
+      10
+    );
+    graphics.setDepth(10);
+
+    // Title
+    this.add
+      .text(width / 2, height * 0.15, "The Legend of Skully the Haunted Runner", {
+        fontFamily: '"Creepster", cursive',
+        fontSize: "42px",
+        color: "#ff6600",
+        stroke: "#000000",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setDepth(11);
+
+    // Initialize typewriter for story text
+    const typewriter = new Typewriter();
+    
+    typewriter.init(this, {
+      x: width / 2,
+      y: contentY,
+      fontFamily: 'Inter, sans-serif',
+      fontSize: 22,
+      maxWidth: width - 140,
+      color: '#ffffff',
+      align: 'center',
+      lineSpacing: 12,
+      text: "👻 On the edge of a forgotten graveyard, " +
+            "under a sky lit by a crooked moon, " +
+            "a mischievous little skull named Skully " +
+            "came to life one Halloween night. ⚡💀\n" +
+            "Every year since, as the clock strikes midnight, " +
+            "Skully awakens once more — doomed  to race through the haunted fields " +
+            "in search of freedom. " +
+            "But the graveyard isn't quiet anymore…\n\n" +
+            "Only by running through the night of endless Halloween, " +
+            "jumping over traps and dodging every fright,\n" +
+            "can Skully hope to break the curse and finally rest in peace...\n" +
+            "At least, until next Halloween. 👀✨",
+      delay: 30,
+      depth: 11,
+      origin: { x: 0.5, y: 0 },
+      onComplete: () => {
+        // Show continue message after typing is done
+        this.showStoryContinueMessage();
+      }
+    });
+
+    // Start typing animation
+    typewriter.start();
+    this.typewriter = typewriter;
+
+    // Skip typing on any key press
+    const skipHandler = this.input.keyboard.once('keydown', () => {
+      if (this.typewriter && this.typewriter.getIsTyping()) {
+        this.typewriter.skip();
+      }
+    });
+  }
+
+  showStoryContinueMessage() {
+    const { width, height } = this.scale;
+    
+    // Flashing "Continue" text
+    const continueText = this.add
+      .text(width / 2, height * 0.85, "Press any key to continue...", {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: "18px",
+        color: "#cbd5f5",
+      })
+      .setOrigin(0.5)
+      .setDepth(12);
+
+    // Flash animation
+    this.tweens.add({
+      targets: continueText,
+      alpha: 0.3,
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    // Continue to menu on any input
+    this.input.keyboard.once('keydown', () => {
+      this.registry.set('hasSeenStory', true);
+      this.scene.restart(); // Restart scene to show menu
+    });
+
+    this.input.once('pointerdown', () => {
+      this.registry.set('hasSeenStory', true);
+      this.scene.restart(); // Restart scene to show menu
+    });
+  }
+
+  buildMenu() {
+    const { width, height } = this.scale;
 
     // Title
     this.add
@@ -37,6 +175,39 @@ export default class MenuScene extends Phaser.Scene {
         color: "#cbd5f5",
       })
       .setOrigin(0.5);
+
+    // Tutorial Button
+    const tutorialBtn = this.add.text(width / 2, height * 0.55, "📖 Tutorial", {
+      fontFamily: '"Creepster", cursive',
+      fontSize: "28px",
+      color: "#fde68a",
+      stroke: "#000000",
+      strokeThickness: 3,
+    })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+
+    // Hover/press effects for tutorial button
+    tutorialBtn.on("pointerover", () => {
+      tutorialBtn.setColor("#ffffff");
+      tutorialBtn.setScale(1.1);
+    });
+    
+    tutorialBtn.on("pointerout", () => {
+      tutorialBtn.setColor("#fde68a");
+      tutorialBtn.setScale(1.0);
+    });
+    
+    tutorialBtn.on("pointerdown", () => {
+      tutorialBtn.setScale(0.95);
+    });
+    
+    tutorialBtn.on("pointerup", () => {
+      tutorialBtn.setScale(1.1);
+      // Don't navigate if consent modal is open
+      if (this.consentModalOpen) return;
+      SceneTransition.fadeToScene(this, "TutorialScene", 600);
+    });
 
     // Flag to prevent click-to-start while modal is being closed
     this.consentModalOpen = true;
@@ -121,7 +292,7 @@ export default class MenuScene extends Phaser.Scene {
       SceneTransition.fadeToScene(this, "GameScene", 600);
     });
 
-    // Start game via click/tap anywhere EXCEPT About button or Music button
+    // Start game via click/tap anywhere EXCEPT About, Tutorial, or Music buttons
     this.input.on("pointerdown", (pointer) => {
       // Don't start game if consent modal is visible or just closed
       if (this.consentModalOpen) return;
@@ -129,7 +300,8 @@ export default class MenuScene extends Phaser.Scene {
       const p = new Phaser.Math.Vector2(pointer.x, pointer.y);
       const overMusic = this.musicButton.getBounds().contains(p.x, p.y);
       const overAbout = aboutBtn.getBounds().contains(p.x, p.y) || aboutLabel.getBounds().contains(p.x, p.y);
-      if (overMusic || overAbout) return;
+      const overTutorial = tutorialBtn.getBounds().contains(p.x, p.y);
+      if (overMusic || overAbout || overTutorial) return;
       SceneTransition.fadeToScene(this, "GameScene", 600);
     });
   }
