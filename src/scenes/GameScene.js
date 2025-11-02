@@ -15,16 +15,22 @@ class GameScene extends Phaser.Scene {
     this.baseGameSpeed = 340;
     this.currentGameSpeed = this.baseGameSpeed;
     this.primaryParallaxFactor = 1;
+
     this.obstacleConfig = {
       speedMultiplier: 0.8,
       intervalMs: [2200, 3600],
       floorYOffset: 112,
     };
+
     this.difficulty = null;
     this.distanceTraveled = 0;
     this.score = 0;
 
     this.isPaused = false;
+
+    this._kbDownHandlers = [];
+    this._kbUpHandlers = [];
+    this._ptrHandlers = [];
   }
 
   init() {
@@ -39,6 +45,12 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
+    // hard reset of any stale overlay/paused state
+    this.isPaused = false;
+    this.input.enabled = true;
+    if (this.physics?.world?.isPaused) this.physics.world.resume();
+    if (this.scene.isActive('PauseScene')) this.scene.stop('PauseScene');
+
     const { width: W, height: H } = this.scale;
 
     SceneTransition.setupFadeIn(this, 800);
@@ -59,7 +71,7 @@ class GameScene extends Phaser.Scene {
     this.jumpScare = new JumpScare(this, { invertMs: 1200 });
     this.controlsInverted = false;
     if (this.jumpscareEnabled) this.jumpScare.startAuto({ min: 12, max: 24 });
-    this.input.keyboard.on('keydown-J', () => { if (this.jumpscareEnabled) this.jumpScare.trigger(); });
+    this._bindKeyDown('J', () => { if (this.jumpscareEnabled) this.jumpScare.trigger(); });
 
     // Ground / Player
     const FLOOR_Y = H - 112;
@@ -109,7 +121,7 @@ class GameScene extends Phaser.Scene {
       this.scene.launch('PauseScene');
     });
 
-    this.input.keyboard.on('keydown-P', () => {
+    this._bindKeyDown('P', () => {
       if (this.isPaused) {
         this.isPaused = false;
         this.resumeAnimations();
@@ -130,44 +142,57 @@ class GameScene extends Phaser.Scene {
       fontStyle: 'bold',
       fontFamily: 'Arial'
     }).setScrollFactor(0).setDepth(200);
+
+    // lifecycle cleanup hooks
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this._onShutdown, this);
+    this.events.once(Phaser.Scenes.Events.DESTROY, this._onShutdown, this);
   }
 
   setupJumpControls() {
-    const press = () => this.player.pressJump();
-    const release = () => this.player.releaseJump();
+    const press = () => this.player?.pressJump?.();
+    const release = () => this.player?.releaseJump?.();
 
-    this.input.keyboard.on('keydown-SPACE', press);
-    this.input.keyboard.on('keyup-SPACE', release);
+    this._bindKeyDown('SPACE', press);
+    this._bindKeyUp('SPACE', release);
 
-    this.input.on('pointerdown', p => {
-      if (this.musicButton?.getBounds().contains(p.x, p.y)) return;
+    const ptrDown = (p) => {
+      if (this.musicButton?.getBounds?.()?.contains(p.x, p.y)) return;
       press();
-    });
-    this.input.on('pointerup', release);
+    };
+    const ptrUp = () => release();
+
+    this.input.on('pointerdown', ptrDown);
+    this.input.on('pointerup', ptrUp);
+
+    this._ptrHandlers.push(['pointerdown', ptrDown], ['pointerup', ptrUp]);
   }
 
   pauseAnimations() {
     this.input.enabled = false;
-    this.player.anims.pause();
-    this.obstacles.pause();
-    if (this.jumpScare) this.jumpScare.pauseAnimations();
-    this.parallax.pause();
+    if (this.player?.anims) this.player.anims.pause();
+    this.obstacles?.pause?.();
+    this.jumpScare?.pauseAnimations?.();
+    this.parallax?.pause?.();
+    if (this.physics?.world) this.physics.world.pause();
   }
 
   resumeAnimations() {
+    if (this.physics?.world?.isPaused) this.physics.world.resume();
     this.input.enabled = true;
-    this.player.anims.resume();
-    this.obstacles.resume();
-    if (this.jumpScare) this.jumpScare.resumeAnimations();
-    this.parallax.resume();
+    if (this.player?.anims) this.player.anims.resume();
+    this.obstacles?.resume?.();
+    this.jumpScare?.resumeAnimations?.();
+    this.parallax?.resume?.();
   }
 
   update(_t, delta) {
+    if (this.scene.isActive('PauseScene')) return;
     if (this.isPaused) return;
 
     const gameSpeed = this.difficulty
       ? this.difficulty.getGameSpeed(this.score)
       : this.baseGameSpeed;
+
     this.currentGameSpeed = gameSpeed;
     const base = (gameSpeed * delta) / 1000;
 
@@ -184,6 +209,38 @@ class GameScene extends Phaser.Scene {
 
     this.parallax.update(base, mainFactor);
     this.obstacles.update(delta, base, this.player, this.score);
+  }
+
+  // --- internal: input binding helpers and cleanup ---
+
+  _bindKeyDown(key, fn) {
+    this.input.keyboard.on(`keydown-${key}`, fn);
+    this._kbDownHandlers.push([`keydown-${key}`, fn]);
+  }
+
+  _bindKeyUp(key, fn) {
+    this.input.keyboard.on(`keyup-${key}`, fn);
+    this._kbUpHandlers.push([`keyup-${key}`, fn]);
+  }
+
+  _removeInputBindings() {
+    // keyboard
+    for (const [evt, fn] of this._kbDownHandlers) this.input.keyboard.off(evt, fn);
+    for (const [evt, fn] of this._kbUpHandlers) this.input.keyboard.off(evt, fn);
+    this._kbDownHandlers.length = 0;
+    this._kbUpHandlers.length = 0;
+
+    // pointer
+    for (const [evt, fn] of this._ptrHandlers) this.input.off(evt, fn);
+    this._ptrHandlers.length = 0;
+  }
+
+  _onShutdown() {
+    this._removeInputBindings();
+    this.obstacles?.destroy?.();
+    this.jumpScare?.destroy?.();
+    // do not destroy parallax textures; manager should handle its own cleanup
+    this.musicButton = null;
   }
 }
 
