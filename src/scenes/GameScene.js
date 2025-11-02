@@ -3,6 +3,7 @@ import MusicManager from '../utils/MusicManager';
 import SceneTransition from '../utils/SceneTransition';
 import Player from '../components/Player';
 import JumpScare from '../components/JumpScare.js';
+import Obstacle from '../components/Obstacle.js';
 
 // Main plate
 import bgLayer05 from '../assets/backgrounds/parallax/Spooky_Cemetery_Layer_05.png';
@@ -20,6 +21,8 @@ class GameScene extends Phaser.Scene {
     super('GameScene');
     this.parallax = [];
     this.gameSpeed = 340;
+    this.backgroundSpeedMultiplier = 2.0; // Even faster background
+    this.obstacleSpeedMultiplier = 0.8; // Slightly faster obstacles
   }
 
   preload() {
@@ -39,6 +42,16 @@ class GameScene extends Phaser.Scene {
 
     SceneTransition.setupFadeIn(this, 800);
     MusicManager.setupMusic(this, 'gameMusic');
+
+    // Create zombie hand animation if it doesn't exist
+    if (!this.anims.exists('zombieHandAnim')) {
+      this.anims.create({
+        key: 'zombieHandAnim',
+        frames: this.anims.generateFrameNumbers('zombieHand', { start: 0, end: 24 }), // 25 frames total
+        frameRate: 10,
+        repeat: -1,
+      });
+    }
 
     // --- L5 only, fit-to-height, full-width tile area (no side gaps) ---
     const src = this.textures.get('bg_l5').getSourceImage();
@@ -61,7 +74,7 @@ class GameScene extends Phaser.Scene {
     const centerOffset = Math.round((W - drawW) / 2);  // 190px on 1280x720
     l5.tilePositionX = -centerOffset;
 
-    this.parallax = [{ ts: l5, speed: 0.24 }]; // slightly faster layer factor
+    this.parallax = [{ ts: l5, speed: this.backgroundSpeedMultiplier }]; // Use shared constant
 
     // --- Optional: enable more strips one by one ---
     // this.#addLayerFitToHeight('bg_l4', 0.18, 'bottom', -16, 0.95, 2); // distant silhouettes
@@ -99,6 +112,11 @@ class GameScene extends Phaser.Scene {
     this.player.markGrounded();
 
     this.physics.add.collider(this.player, this.ground, () => this.player.markGrounded());
+
+    // Obstacles array (not a Phaser group, since Obstacle is a custom class)
+    this.obstacles = [];
+    this.lastObstacleSpawnTime = 0;
+    this.obstacleSpawnInterval = this.getRandomSpawnInterval(); // Random interval for first spawn
 
     this.musicButton = MusicManager.createMusicButton(this, W - 20, 20);
     this.setupJumpControls();
@@ -152,7 +170,55 @@ class GameScene extends Phaser.Scene {
   update(_t, delta) {
     if (this.parallax.length === 0) return;
     const base = (this.gameSpeed * delta) / 1000;
-    for (const l of this.parallax) l.ts.tilePositionX += base * l.speed;
+    const backgroundMove = base * this.backgroundSpeedMultiplier;
+    const obstacleMove = base * this.obstacleSpeedMultiplier;
+    
+    // Move background layers
+    for (const l of this.parallax) {
+      l.ts.tilePositionX += backgroundMove;
+    }
+
+    // Spawn obstacles at intervals
+    this.lastObstacleSpawnTime += delta;
+    if (this.lastObstacleSpawnTime >= this.obstacleSpawnInterval) {
+      this.spawnObstacle();
+      this.lastObstacleSpawnTime = 0;
+      this.obstacleSpawnInterval = this.getRandomSpawnInterval();
+    }
+
+    // Update all obstacles with slower movement
+    this.obstacles = this.obstacles.filter((obstacle) => {
+      obstacle.update(obstacleMove);
+
+      // Check collision with player
+      if (this.physics.overlap(this.player, obstacle.sprite)) {
+        obstacle.onCollide(this.player);
+        return false;
+      }
+
+      return obstacle.sprite.active;
+    });
+  }
+
+  spawnObstacle() {
+    const { width: W, height: H } = this.scale;
+    const FLOOR_Y = H - 112;
+
+    // Spawn obstacles FIXED at floor level where player walks
+    const obstacleY = FLOOR_Y;
+
+    // Spawn off-screen to the right
+    const obstacle = new Obstacle(this, W + 50, obstacleY);
+    this.obstacles.push(obstacle);
+
+    if (import.meta.env.DEV) {
+      console.log('Obstacle spawned at floor Y:', obstacleY);
+    }
+  }
+
+  getRandomSpawnInterval() {
+    // Random spawn interval between 3 and 5 seconds (farther apart)
+    return Phaser.Math.Between(3000, 5000);
   }
 }
 

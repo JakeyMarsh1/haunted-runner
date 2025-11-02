@@ -1,6 +1,6 @@
 // src/scenes/AboutScene.js
 import Phaser from 'phaser';
-import avatarJakeImg from '../assets/avatars/jake.jpg';
+import avatarJakeImg from '../assets/avatars/jake.png';
 import avatarChahinezImg from '../assets/avatars/chahinez.jpg';
 import avatarSoumyaImg from '../assets/avatars/soumya.jpg';
 import avatarKarolisImg from '../assets/avatars/karolis.jpg';
