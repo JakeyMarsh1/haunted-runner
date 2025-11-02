@@ -33,7 +33,7 @@ export default class TutorialScene extends Phaser.Scene {
 
     // Add border to content box
     const graphics = this.add.graphics();
-    graphics.lineStyle(3, 0xf87171, 1);
+    graphics.lineStyle(3, 0xff6600, 1);
     graphics.strokeRoundedRect(
       40,
       contentY + 120 - (H * 0.5) / 2,
@@ -97,15 +97,31 @@ export default class TutorialScene extends Phaser.Scene {
     // Music button
     this.musicButton = MusicManager.createMusicButton(this, W - 20, 20);
 
-    // Go back to menu on any input
-    this.input.keyboard.once('keydown', () => {
+    // Setup navigation handlers
+    this.setupNavigation();
+  }
+
+  setupNavigation() {
+    let hasNavigated = false;
+
+    const navigateToMenu = () => {
+      if (hasNavigated) return;
+      hasNavigated = true;
       SceneTransition.fadeToScene(this, "MenuScene", 600);
+    };
+
+    // Go back to menu on keyboard input
+    this.input.keyboard.on('keydown', () => {
+      navigateToMenu();
     });
 
-    this.input.once('pointerdown', (pointer) => {
+    // Go back to menu on pointer click (but not on music button)
+    this.input.on('pointerdown', (pointer) => {
       // Don't navigate if clicking music button
-      if (this.musicButton?.getBounds().contains(pointer.x, pointer.y)) return;
-      SceneTransition.fadeToScene(this, "MenuScene", 600);
+      if (this.musicButton?.getBounds().contains(pointer.x, pointer.y)) {
+        return;
+      }
+      navigateToMenu();
     });
   }
 }

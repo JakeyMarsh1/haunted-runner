@@ -24,6 +24,19 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.body.setMaxVelocity(1000, Player.MAX_FALL);
     this.setBounce(0);
 
+    // Create all animations
+    this.createAnimations(scene);
+    this.play('run');
+
+    // State
+    this._jumpHeld = false;
+    this._canJump = false;
+    this._currentAnimState = 'run';
+    this._isDead = false;
+  }
+
+  createAnimations(scene) {
+    // Running animation
     if (!scene.anims.exists('run')) {
       scene.anims.create({
         key: 'run',
@@ -32,11 +45,46 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         repeat: -1
       });
     }
-    this.play('run');
 
-    // State
-    this._jumpHeld = false;
-    this._canJump = false;
+    // Jump start animation (plays once when jumping)
+    if (!scene.anims.exists('jumpStart')) {
+      scene.anims.create({
+        key: 'jumpStart',
+        frames: scene.anims.generateFrameNumbers('skullyJumpStart', { start: 0, end: 5 }),
+        frameRate: 15,
+        repeat: 0
+      });
+    }
+
+    // In air animation (loops while at peak of jump)
+    if (!scene.anims.exists('inAir')) {
+      scene.anims.create({
+        key: 'inAir',
+        frames: scene.anims.generateFrameNumbers('skullyInAir', { start: 0, end: 5 }),
+        frameRate: 10,
+        repeat: -1
+      });
+    }
+
+    // Falling animation (loops while falling)
+    if (!scene.anims.exists('falling')) {
+      scene.anims.create({
+        key: 'falling',
+        frames: scene.anims.generateFrameNumbers('skullyFalling', { start: 0, end: 5 }),
+        frameRate: 12,
+        repeat: -1
+      });
+    }
+
+    // Death animation (plays once on collision)
+    if (!scene.anims.exists('death')) {
+      scene.anims.create({
+        key: 'death',
+        frames: scene.anims.generateFrameNumbers('skullyDeath', { start: 0, end: 14 }),
+        frameRate: 15,
+        repeat: 0
+      });
+    }
   }
 
   // Input API
@@ -69,6 +117,52 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.body.velocity.y > Player.MAX_FALL) {
       this.setVelocityY(Player.MAX_FALL);
     }
+
+    // Update animation based on state
+    this.updateAnimation();
+  }
+
+  updateAnimation() {
+    const body = this.body;
+    if (!body) return;
+
+    // Don't update animation if dead
+    if (this._isDead) return;
+
+    const onGround = body.touching.down || body.blocked.down;
+    const vy = body.velocity.y;
+
+    let newState = this._currentAnimState;
+
+    if (onGround) {
+      // On ground - play run animation
+      newState = 'run';
+    } else if (vy < -100) {
+      // Moving up quickly - play jump start or inair
+      if (this._currentAnimState === 'run' || this._currentAnimState === 'falling') {
+        newState = 'jumpStart';
+      } else if (this._currentAnimState === 'jumpStart' && this.anims.currentFrame.index === 5) {
+        // Jump start finished, transition to inAir
+        newState = 'inAir';
+      } else if (this._currentAnimState === 'jumpStart') {
+        // Still playing jump start
+        newState = 'jumpStart';
+      } else {
+        newState = 'inAir';
+      }
+    } else if (vy > 100) {
+      // Falling down
+      newState = 'falling';
+    } else {
+      // Near peak of jump
+      newState = 'inAir';
+    }
+
+    // Only play new animation if state changed
+    if (newState !== this._currentAnimState) {
+      this._currentAnimState = newState;
+      this.play(newState);
+    }
   }
 
   markGrounded() {
@@ -77,5 +171,25 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (body.velocity.y >= 0) {
       this._canJump = true;
     }
+  }
+
+  playDeath() {
+    if (this._isDead) return; // Already dead
+    
+    this._isDead = true;
+    this._currentAnimState = 'death';
+    
+    // Stop physics
+    this.body.setVelocity(0, 0);
+    this.body.setAllowGravity(false);
+    
+    // Play death animation
+    this.play('death');
+    
+    return this; // For chaining
+  }
+
+  isDead() {
+    return this._isDead;
   }
 }
