@@ -32,6 +32,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this._jumpHeld = false;
     this._canJump = false;
     this._currentAnimState = 'run';
+    this._isDead = false;
   }
 
   createAnimations(scene) {
@@ -72,6 +73,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         frames: scene.anims.generateFrameNumbers('skullyFalling', { start: 0, end: 5 }),
         frameRate: 12,
         repeat: -1
+      });
+    }
+
+    // Death animation (plays once on collision)
+    if (!scene.anims.exists('death')) {
+      scene.anims.create({
+        key: 'death',
+        frames: scene.anims.generateFrameNumbers('skullyDeath', { start: 0, end: 14 }),
+        frameRate: 15,
+        repeat: 0
       });
     }
   }
@@ -115,6 +126,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     const body = this.body;
     if (!body) return;
 
+    // Don't update animation if dead
+    if (this._isDead) return;
+
     const onGround = body.touching.down || body.blocked.down;
     const vy = body.velocity.y;
 
@@ -157,5 +171,25 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (body.velocity.y >= 0) {
       this._canJump = true;
     }
+  }
+
+  playDeath() {
+    if (this._isDead) return; // Already dead
+    
+    this._isDead = true;
+    this._currentAnimState = 'death';
+    
+    // Stop physics
+    this.body.setVelocity(0, 0);
+    this.body.setAllowGravity(false);
+    
+    // Play death animation
+    this.play('death');
+    
+    return this; // For chaining
+  }
+
+  isDead() {
+    return this._isDead;
   }
 }

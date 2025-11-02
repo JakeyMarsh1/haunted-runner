@@ -8,6 +8,7 @@ import skullyRunningSpriteSheet from "../assets/sprites/skully_running.png";
 import skullyJumpStartSpriteSheet from "../assets/sprites/skully_jump_start.png";
 import skullyInAirSpriteSheet from "../assets/sprites/skully_inair.png";
 import skullyFallingSpriteSheet from "../assets/sprites/skully_falling.png";
+import skullyDeathSpriteSheet from "../assets/sprites/skully_death.png";
 import scream1 from '../assets/audio/jumpscare-1.mp3';
 import scream2 from '../assets/audio/jumpscare-2.mp3';
 
@@ -65,6 +66,12 @@ export default class BootScene extends Phaser.Scene {
     });
 
     this.load.spritesheet("skullyFalling", skullyFallingSpriteSheet, {
+      frameWidth: 900,
+      frameHeight: 900,
+    });
+
+    // Skully Death Animation (15 frames, 900x900 each)
+    this.load.spritesheet("skullyDeath", skullyDeathSpriteSheet, {
       frameWidth: 900,
       frameHeight: 900,
     });
