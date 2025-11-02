@@ -1,14 +1,15 @@
+// src/main.js
 import Phaser from "phaser";
 import "./style/main.css";
 
 import BootScene from "./scenes/BootScene";
-import AboutScene from './scenes/AboutScene';
+import AboutScene from "./scenes/AboutScene";
 import MenuScene from "./scenes/MenuScene";
 import TutorialScene from "./scenes/TutorialScene";
 import GameScene from "./scenes/GameScene";
 import PauseScene from "./scenes/PauseScene";
 import GameOverScene from "./scenes/GameOverScene";
-import HighScoreScene from './scenes/HighScoreScene';
+import HighScoreScene from "./scenes/HighScoreScene";
 
 const config = {
   type: Phaser.AUTO,
@@ -20,22 +21,19 @@ const config = {
     BootScene,
     AboutScene,
     MenuScene,
+    TutorialScene,
     GameScene,
     PauseScene,
     GameOverScene,
     HighScoreScene,
   ],
-
-  scene: [BootScene, AboutScene, MenuScene, GameScene, PauseScene, GameOverScene, TutorialScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   physics: {
     default: "arcade",
-    arcade: {
-      gravity: { y: 350 },
-    },
+    arcade: { gravity: { y: 350 } },
   },
 };
 
@@ -50,7 +48,6 @@ if (import.meta.hot) {
     window.__HAUNTED_RUNNER_GAME__?.destroy(true);
     window.__HAUNTED_RUNNER_GAME__ = undefined;
   });
-
   import.meta.hot.accept(() => {
     window.__HAUNTED_RUNNER_GAME__?.destroy(true);
     window.__HAUNTED_RUNNER_GAME__ = createGame();
