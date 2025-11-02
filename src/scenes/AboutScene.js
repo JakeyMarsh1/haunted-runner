@@ -15,7 +15,7 @@ const TEAM = [
   { key: 'avatar_soumya',   name: 'Soumya',   role: 'Documentation',
     links: [{ label: 'GitHub', url: 'https://github.com/example3' },
             { label: 'LinkedIn', url: 'https://www.linkedin.com/in/soumya-sharma-a34b76374/' }] },
-  { key: 'avatar_karolis',  name: 'Karolis',  role: 'Emotional Support',
+  { key: 'avatar_karolis',  name: 'Karolis',  role: 'A Ghost',
     links: [{ label: 'GitHub', url: 'https://github.com/kpetrauskas92' },
             { label: 'LinkedIn', url: 'https://www.linkedin.com/in/pkarolisdev/' }] },
 ];
