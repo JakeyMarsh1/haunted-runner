@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+﻿import Phaser from "phaser";
 import SceneTransition from "../utils/SceneTransition";
 import menuBackgroundImg from "../assets/backgrounds/Background2.png";
 import gameBackgroundImg from "../assets/backgrounds/Background4.png";
@@ -24,29 +24,36 @@ import L9 from '../assets/backgrounds/parallax/Spooky_Cemetery_Layer_09.png';
 import zombieHandSprite from '../assets/sprites/ZombieHand.png';
 
 export default class BootScene extends Phaser.Scene {
-  constructor() { super("BootScene"); }
+  constructor() {
+    super("BootScene");
+  }
 
   preload() {
+    log("preload start");
     this.cameras.main.setBackgroundColor("#000000");
+
+    this.load.on("filecomplete", (key) => {
+      log("asset loaded", key);
+    });
+
+    this.load.on("loaderror", (_file) => {
+      logError("asset failed", _file?.src || _file?.key, _file);
+    });
+
+    this.load.on("progress", (value) => {
+      log("progress", `${Math.round(value * 100)}%`);
+    });
 
     // Images
     this.load.image("menuBackground", menuBackgroundImg);
     this.load.image("gameBackground", gameBackgroundImg);
-    this.load.image('bg_l1', L1);
-    this.load.image('bg_l2', L2);
-    this.load.image('bg_l3', L3);
-    this.load.image('bg_l4', L4);
-    this.load.image('bg_l5', L5);
-    this.load.image('bg_l6', L6);
-    this.load.image('bg_l7', L7);
-    this.load.image('bg_l8', L8);
-    this.load.image('bg_l9', L9);
+
 
     // Audio (autoplay will still require a user gesture later)
     this.load.audio("menuMusic", menuMusicFile);
     this.load.audio("gameMusic", gameMusicFile);
-    this.load.audio('sfx_js_1', scream1);
-    this.load.audio('sfx_js_2', scream2);
+    this.load.audio("sfx_js_1", scream1);
+    this.load.audio("sfx_js_2", scream2);
 
     // Skully Running Spritesheet (12 frames, 900x900 each)
     this.load.spritesheet("player", skullyRunningSpriteSheet, {
@@ -84,12 +91,29 @@ export default class BootScene extends Phaser.Scene {
 
     // Transition after loader completes
     this.load.once("complete", () => {
-
+      log("preload complete; transitioning to MenuScene");
       SceneTransition.fadeToScene(this, "MenuScene", 400);
     });
   }
 
   create() {
-    // No-op: create will run after preload; transition handled in the loader 'complete' callback.
+    log("create called");
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
+    window.addEventListener("error", this.handleGlobalError);
+    window.addEventListener("unhandledrejection", this.handlePromiseRejection);
   }
+
+  shutdown() {
+    log("shutdown called");
+    window.removeEventListener("error", this.handleGlobalError);
+    window.removeEventListener("unhandledrejection", this.handlePromiseRejection);
+  }
+
+  handleGlobalError = (event) => {
+    logError("window error", event?.message, event?.error);
+  };
+
+  handlePromiseRejection = (event) => {
+    logError("unhandled promise rejection", event?.reason);
+  };
 }
