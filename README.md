@@ -287,9 +287,14 @@ There are no remaining major differences between the local version when compared
 
 | Source | Notes |
 | --- | --- |
-| [Freesound](https://freesound.org) | Sound effects and music |
+| [Pixabay](https://pixabay.com/) | Sound effects and music |
 | [OpenGameArt](https://opengameart.org) | Sprites and backgrounds |
 | [Google Fonts](https://fonts.google.com) | Creepster and Inter |
 | [TinyPNG](https://tinypng.com) | Image compression |
 
+
+for the background music:
+ ![freesound_community](https://pixabay.com/sound-effects/haunting-spooky-2020-01-15-0-loop-000-065-26497/)
+
+![oneOddEgg (Freesound)](https://pixabay.com/sound-effects/spooky-wind-70657/)
 ### Acknowledgements

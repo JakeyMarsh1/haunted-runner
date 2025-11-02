@@ -60,11 +60,22 @@ export default class Obstacle {
       console.log('Obstacle collision with player!');
     }
 
-    // Trigger game over and pass score + preferences
-    this.scene.scene.start('GameOverScene', { 
-      score: this.scene.score || 0,
-      jumpscareEnabled: this.scene.jumpscareEnabled,
-      musicEnabled: this.scene.musicEnabled
+    // Only trigger death once
+    if (player.isDead()) return;
+
+    // Play death animation on player
+    player.playDeath();
+
+    // Pause game movement
+    this.scene.isPaused = true;
+
+    // Wait for death animation to complete (~1 second), then transition to GameOver
+    this.scene.time.delayedCall(1000, () => {
+      this.scene.scene.start('GameOverScene', { 
+        score: this.scene.score || 0,
+        jumpscareEnabled: this.scene.jumpscareEnabled,
+        musicEnabled: this.scene.musicEnabled
+      });
     });
   }
 }
