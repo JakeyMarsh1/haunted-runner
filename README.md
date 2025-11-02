@@ -1,5 +1,5 @@
 
-# [Haunted-runner](https://github.com/JakeyMarsh1/haunted-runner)
+# [Haunted-runner](https://haunted-runner-beryl.vercel.app/)
 
 
 🎃 ## Game Description: 
@@ -282,6 +282,8 @@ There are no remaining major differences between the local version when compared
 | [MDN Web Docs](https://developer.mozilla.org) | JavaScript and web standards |
 | [Vite Documentation](https://vitejs.dev/guide) | Vite build tool |
 | [ChatGPT](https://chatgpt.com) | Architecture and debugging |
+
+https://github.com/netgfx/Phaser-typewriter?tab=readme-ov-file
 
 ### Media
 
