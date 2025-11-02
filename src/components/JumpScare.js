@@ -16,9 +16,9 @@ export default class JumpScare {
     this.flash = scene.add.rectangle(0, 0, W, H, 0xffffff, 1)
       .setOrigin(0)
       .setAlpha(0)
-      .setDepth(9999);
+      .setDepth(400);
 
-    this.vignette = scene.add.graphics().setDepth(9998).setAlpha(0);
+    this.vignette = scene.add.graphics().setDepth(399).setAlpha(0);
     this.#drawVignette(W, H);
 
     this.sfxKeys = ['sfx_js_1', 'sfx_js_2'].filter(k => scene.cache.audio.exists(k));
@@ -52,9 +52,26 @@ export default class JumpScare {
     if (this.timer) { this.timer.remove(false); this.timer = null; }
   }
 
+  stopAllEffects() {
+    // Stop any active tweens on flash/vignette
+    this.scene.tweens.getTweensOf(this.flash).forEach(tween => tween.stop());
+    this.scene.tweens.getTweensOf(this.vignette).forEach(tween => tween.stop());
+    
+    // Reset flash and vignette to default state
+    this.flash.setAlpha(0);
+    this.vignette.setAlpha(0);
+    
+    // Reset camera
+    const cam = this.scene.cameras.main;
+    cam.resetFX();
+  }
+
   trigger({ invert = true } = {}) {
     const cam = this.scene.cameras.main;
     const { shakeDur, shakeMag, zoom, volume, invertMs } = this.opts;
+
+    // Don't trigger if game is paused
+    if (this.scene.isPaused) return;
 
     // Only play sound if music is enabled (not muted)
     const musicEnabled = this.scene.registry.get('musicEnabled');
@@ -63,6 +80,7 @@ export default class JumpScare {
       if (key) this.scene.sound.play(key, { volume });
     }
 
+    // Apply visual effects
     cam.shake(shakeDur, shakeMag);
     cam.zoomTo(zoom, 120, 'Quad.easeOut', true, (_c, _p, done) => {
       if (done) cam.zoomTo(1, 180, 'Quad.easeOut', true);
@@ -93,5 +111,17 @@ export default class JumpScare {
     this.stopAuto();
     this.flash.destroy();
     this.vignette.destroy();
+  }
+
+  pauseAnimations() {
+    // Pause all tweens on flash and vignette
+    this.scene.tweens.getTweensOf(this.flash).forEach(tween => tween.pause());
+    this.scene.tweens.getTweensOf(this.vignette).forEach(tween => tween.pause());
+  }
+
+  resumeAnimations() {
+    // Resume all tweens on flash and vignette
+    this.scene.tweens.getTweensOf(this.flash).forEach(tween => tween.resume());
+    this.scene.tweens.getTweensOf(this.vignette).forEach(tween => tween.resume());
   }
 }
