@@ -79,16 +79,16 @@ source: [haunted-runner amiresponsive](https://ui.dev/amiresponsive?url=https://
 
 ### Colour Scheme
 
-I used [coolors.co](https://coolors.co/080708-0b0f14-111827-1f2937-27272a-8a0000-f87171-fde68a-9ca3af) to generate my color palette.
+I used [coolors.co](https://coolors.co/080708-1f2937-457460-8a0000-f87171-fde68a-ff6600) to generate my color palette.
 
-- `#0b0f14` - Background dark blue-black
-- `#111827` - Card backgrounds
-- `#1f2937` - Borders and accents
+- `#080708` - Background dark blue-black
+- `#1f2937` - Card backgrounds
+- `#457460` - Background green.
 - `#8a0000` - Vignette overlay
 - `#f87171` - Primary text and highlights
 - `#fde68a` - Secondary highlights
 - `#9ca3af` - Subtle text
-- `#27272a` - UI elements
+- `#ff6600` - UI elements
 
 ![screenshot](src/assets/documents/color-palette.png)
 
@@ -99,8 +99,7 @@ I used [coolors.co](https://coolors.co/080708-0b0f14-111827-1f2937-27272a-8a0000
 
 ## Wireframes
 
-To follow best practice, wireframes were developed for mobile, tablet, and desktop sizes.
-I've used [Balsamiq](https://balsamiq.com/wireframes) to design my site wireframes.
+The wireframes were developed for desktop sizes.
 
 | Page | Desktop | 
 | --- | --- | 
