@@ -35,6 +35,7 @@ export default class Obstacle {
     // Play animation if it exists
     if (scene.anims.exists('zombieHandAnim')) {
       this.sprite.play('zombieHandAnim');
+      this.scene.sound.play('typeSound1');
     }
 
     if (import.meta.env.DEV) {

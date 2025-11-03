@@ -1,5 +1,5 @@
 
-# [Haunted-runner](https://haunted-runner.vercel.app/)
+# [Haunted-Runner](https://haunted-runner.vercel.app/)
 
 
 ## 🎃 Game Description: 
