@@ -40,6 +40,7 @@ source: [haunted-runner amiresponsive](https://ui.dev/amiresponsive?url=https://
 - Showcase modern web game development
 - Create a memorable, shareable experience
 
+
 #### 2. Scope
 
 **[Features](#features)** (see below)
@@ -66,6 +67,51 @@ source: [haunted-runner amiresponsive](https://ui.dev/amiresponsive?url=https://
 2. Tap or press SPACE to start
 3. Run, jump obstacles, react to jumpscares
 4. See performance and replay
+
+**Flowcharts**
+
+
+<details>
+<summary>Flowchart part 1</summary>
+<br>
+
+![screenshot](src/assets/documents/flowchart1.png) 
+
+</details>
+
+<details>
+<summary>Flowchart part 2</summary>
+<br>
+
+![screenshot](src/assets/documents/flowchart2.png) 
+
+</details>
+
+<details>
+<summary>Flowchart part 3</summary>
+<br>
+
+![screenshot](src/assets/documents/flowchart3.png) 
+
+</details>
+
+<details>
+<summary>Audio system logic</summary>
+<br>
+
+![screenshot](src/assets//documents/audio-system-logic.png)  
+
+</details>
+<details>
+<summary>Key game mechanics</summary>
+<br>
+
+![screenshot](src/assets/documents/key-game-mechanics.png) 
+
+</details>
+
+
+
 
 #### 4. Skeleton
 
