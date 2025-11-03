@@ -4,6 +4,8 @@ import menuBackgroundImg from "../assets/backgrounds/Background2.png";
 import gameBackgroundImg from "../assets/backgrounds/Background4.png";
 import menuMusicFile from "../assets/music/spooky-wind.mp3";
 import gameMusicFile from "../assets/music/haunting-spooky.mp3";
+import soundEffect1 from "../assets/audio/ghoul-growling.mp3";
+import soundEffect2 from "../assets/audio/game-over.mp3";
 import skullyRunningSpriteSheet from "../assets/sprites/skully_running.png";
 import skullyJumpStartSpriteSheet from "../assets/sprites/skully_jump_start.png";
 import skullyInAirSpriteSheet from "../assets/sprites/skully_inair.png";
@@ -41,6 +43,8 @@ export default class BootScene extends Phaser.Scene {
 
     this.load.audio("menuMusic", menuMusicFile);
     this.load.audio("gameMusic", gameMusicFile);
+    this.load.audio("typeSound1", soundEffect1);
+    this.load.audio("typeSound2", soundEffect2);
     this.load.audio("sfx_js_1", scream1);
     this.load.audio("sfx_js_2", scream2);
 
