@@ -1,10 +1,10 @@
 
-# [Haunted-runner](https://github.com/JakeyMarsh1/haunted-runner)
+# [Haunted-runner](https://haunted-runner.vercel.app/)
 
 
 🎃 ## Game Description: 
 
-Welcome to The haunted Runner, the spookiest (and silliest!) Halloween adventure ever! 👻
+Welcome to The haunted Runner, the spookiest Halloween adventure ever! 👻
 
 **Haunted Runner** is an atmospheric endless runner game built with Phaser 3, designed to deliver an immersive spooky gaming experience. The game combines classic runner mechanics with spooky elements, featuring randomly triggered jumpscares, parallax scrolling backgrounds, and dynamic difficulty progression. The project targets casual gamers, halloween enthusiasts, and players seeking a quick, thrilling gaming experience. With simple controls (spacebar or touch), the game is accessible across devices and skill levels.
 The endless runner format keeps sessions short and replayable while layering atmosphere, audio, and mechanics for a cohesive spooky Halloween experience. This project also provided an opportunity to explore game development with Phaser 3, including physics, parallax, scene management, and audio.
@@ -13,13 +13,12 @@ It’s fast, it’s fun, and just a tiny bit spooky — but don’t worry, it’
 
 ---
 
-
 **Site Mockups**
 
 
-![screenshot](documentation/mockup.png)
+![screenshot](src/assets/documents/amIresponsive.png)
 
-source: [haunted-runner amiresponsive]()
+source: [haunted-runner amiresponsive](https://ui.dev/amiresponsive?url=https://haunted-runner.vercel.app/)
 
 ## UX
 
@@ -103,24 +102,31 @@ I used [coolors.co](https://coolors.co/080708-0b0f14-111827-1f2937-27272a-8a0000
 To follow best practice, wireframes were developed for mobile, tablet, and desktop sizes.
 I've used [Balsamiq](https://balsamiq.com/wireframes) to design my site wireframes.
 
-| Page | Mobile | Tablet | Desktop |
-| --- | --- | --- | --- |
-| Menu | ![screenshot](documentation/wireframes/mobile-menu.png) | ![screenshot](documentation/wireframes/tablet-menu.png) | ![screenshot](documentation/wireframes/desktop-menu.png) |
-| Game | ![screenshot](documentation/wireframes/mobile-game.png) | ![screenshot](documentation/wireframes/tablet-game.png) | ![screenshot](documentation/wireframes/desktop-game.png) |
-| About | ![screenshot](documentation/wireframes/mobile-about.png) | ![screenshot](documentation/wireframes/tablet-about.png) | ![screenshot](documentation/wireframes/desktop-about.png) |
+| Page | Desktop | 
+| --- | --- | 
+| Menu | ![screenshot](src/assets/documents/wireframe-start.webp) |
+| Game | ![screenshot](src/assets/documents/wireframe-gamescene.webp) | 
+| GameOver | ![screenshot](src/assets/documents/wireframe-gameover.webp) | 
+| HighScore | ![screenshot](src/assets/documents/wireframe-highscore.webp) | 
 
 ## User Stories
 
-| Target | Expectation | Outcome |
+| User Story | Need | So That |
 | --- | --- | --- |
-| As a user | I want simple, responsive controls | so I can focus on gameplay |
-| As a user | I want clear game feedback | so I can track progress |
-| As a user | I want atmospheric visuals and audio | for a consistent horror experience |
-| As a user | I want smooth performance across devices | so gameplay is reliable |
-| As a user | I want accessible difficulty | so I can continue playing |
-| As a user | I want quick play sessions | so I can jump in anytime |
-| As a user | I want music controls | to customize the experience |
-| As a user | I want to see the team | to learn who made the game |
+| As a player | I want to see an engaging story intro | so I understand the game's narrative and feel immersed in the Halloween atmosphere |
+| As a player | I want simple, responsive controls (SPACE or TAP to jump) | so I can focus on gameplay and react quickly to obstacles |
+| As a player | I want to access a tutorial before playing | so I can learn the controls and game mechanics without confusion |
+| As a player | I want smooth character animations (running, jumping, falling, death) | so the game feels polished and visually engaging |
+| As a player | I want to avoid obstacles (zombie hands) | so I can test my reflexes and survive as long as possible |
+| As a player | I want to see my score and track my progress | so I can challenge myself to beat my high score |
+| As a player | I want atmospheric visuals with parallax scrolling | so I feel immersed in the haunted graveyard setting |
+| As a player | I want background music with toggle controls | so I can customize my audio experience and play in any environment |
+| As a player | I want smooth scene transitions with fade effects | so the game feels professional and well-designed |
+| As a player | I want random jumpscares that temporarily invert controls | so the game remains unpredictable and thrilling |
+| As a player | I want to see a dramatic death animation when I collide with obstacles | so failures feel impactful and add to the game's atmosphere |
+| As a player | I want quick play sessions with instant restart | so I can jump in anytime and replay easily |
+| As a player | I want to learn about the development team | so I can appreciate the creators and their work |
+| As a player | I want privacy controls for music and jumpscares | so I have control over my gaming experience |
 
 ## Features
 
@@ -128,13 +134,17 @@ I've used [Balsamiq](https://balsamiq.com/wireframes) to design my site wirefram
 
 | Feature | Notes | Screenshot |
 | --- | --- | --- |
-| Main Menu | Menu with title, instructions, About, and music toggle. Click/tap or SPACE to start. | ![screenshot](documentation/features/menu.png) |
-| Parallax Background | Multi-layer parallax cemetery for depth. Tiles on demand. | ![screenshot](documentation/features/parallax.png) |
-| Player Controls | Space or tap to jump. Variable jump height with early release. Responsive across devices. | ![screenshot](documentation/features/player.png) |
-| Jumpscares | Random triggers with flash, shake, vignette, and SFX. Inverts controls. | ![screenshot](documentation/features/jumpscare.png) |
-| Music System | Persistent toggle, scene-specific tracks, high-contrast controls. | ![screenshot](documentation/features/music.png) |
-| About Page | Grid of team members, roles, and links, with circular avatars and smooth transitions. | ![screenshot](documentation/features/about.png) |
-| Scene Transitions | Fade transitions between scenes. | ![screenshot](documentation/features/transitions.png) |
+| Intro Scene | Cinematic typewriter-style narrative introducing Skully's story. Sets the Halloween mood with engaging backstory. | ![screenshot](src/assets/documents/intro-story.png) |
+| Tutorial Scene | Comprehensive how-to-play guide with clear instructions on game objectives and control. | ![screenshot](src/assets/documents/instruction.png) |
+| Main Menu | Clean, spooky-themed interface with three primary buttons: Start Game, Tutorial, and About the Team.| ![screenshot](src/assets/documents/menuScene.png) |
+| Game Scene | Core gameplay with Skully running through haunted graveyard. Features parallax scrolling cemetery background with 9 separate layers moving at different speeds for depth perception, real-time score tracking, and obstacle spawning system. Includes music toggle and pause (when pressing P ). | ![screenshot](src/assets/documents/game-scene.png) |
+| Game Over Scene | Game Over screen displaying final score with input validation for player name. Features "Submit Score" button to save to leaderboard, "Play Again" for instant restart, and "Main Menu" to return. | ![screenshot](src/assets/documents/gameover.png) |
+| Leaderboard | Top 10 high scores displayed in ranked order with player names and scores. Features "Back to Menu" button and clean table layout. Scores persist across sessions using Supabase backend integration. Scrollable list with orange-themed UI matching game aesthetic. | ![screenshot](src/assets/documents/leaderboard.png) |
+| Game Settings | Consent modal appearing on first game load. Allows players to enable/disable background music and jumpscare effects. Features toggle switches, "Save Preferences" button, and persistent storage across sessions. Reopenable via settings gear icon in main menu. | ![screenshot](src/assets/documents/game-settings.png) |
+| About Page | Grid of team members, roles and social media links (GitHub, LinkedIn). | ![screenshot](src/assets/documents/about-team.png) |
+| Scene Transitions | Smooth fade-to-black transitions between all scenes (Boot → Menu, Menu → Game, Game → GameOver, etc.). Fade duration of 600-800ms creates professional, cinematic feel. Prevents jarring scene switches and enhances polish. Implemented via reusable SceneTransition utility class. | ![screenshot](documentation/features/transitions.png) |
+| Player Controls | Responsive jump mechanics via SPACE key or screen tap/click. Variable jump height - hold for higher jumps, release early for shorter hops. Smooth animation state machine with 5 states (run, jump start, in-air, falling, death).| ![screenshot](documentation/features/player.png) |
+| Jumpscares | Random horror events triggered every 12-24 seconds. | ![screenshot](documentation/features/jumpscare.png) |
 
 ### Future Features
 
@@ -282,6 +292,8 @@ There are no remaining major differences between the local version when compared
 | [MDN Web Docs](https://developer.mozilla.org) | JavaScript and web standards |
 | [Vite Documentation](https://vitejs.dev/guide) | Vite build tool |
 | [ChatGPT](https://chatgpt.com) | Architecture and debugging |
+| [Phaser typewrite documentation](https://github.com/netgfx/Phaser-typewriter?tab=readme-ov-file) | Documentation |
+
 
 ### Media
 
@@ -293,8 +305,4 @@ There are no remaining major differences between the local version when compared
 | [TinyPNG](https://tinypng.com) | Image compression |
 
 
-for the background music:
- ![freesound_community](https://pixabay.com/sound-effects/haunting-spooky-2020-01-15-0-loop-000-065-26497/)
 
-![oneOddEgg (Freesound)](https://pixabay.com/sound-effects/spooky-wind-70657/)
-### Acknowledgements
