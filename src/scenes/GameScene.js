@@ -35,8 +35,8 @@ class GameScene extends Phaser.Scene {
 
   init() {
     const menuScene = this.scene.get('MenuScene');
-    this.jumpscareEnabled = menuScene?.jumpscareEnabled ?? true;
-    this.musicEnabled = menuScene?.musicEnabled ?? true;
+    this.jumpscareEnabled = menuScene?.jumpscareEnabled ?? false;
+    this.musicEnabled = menuScene?.musicEnabled ?? false;
   }
 
   preload() {
@@ -107,7 +107,7 @@ class GameScene extends Phaser.Scene {
     this.setupJumpControls();
 
     // Pause button
-    const settingsButton = this.add.text(W - 90, 32, '⚙', { fontSize: '28px', fontFamily: 'Arial' })
+    const settingsButton = this.add.text(W - 90, 32, '⚙️', { fontSize: '28px', fontFamily: 'Arial' })
       .setOrigin(0.5, 0.5)
       .setScrollFactor(0)
       .setInteractive({ useHandCursor: true })

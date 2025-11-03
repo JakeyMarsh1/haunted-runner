@@ -5,13 +5,13 @@ export default class SceneTransition {
    * @param {string} targetScene - The key of the scene to transition to
    * @param {number} duration - Fade duration in milliseconds (default: 500)
    */
-  static fadeToScene(currentScene, targetScene, duration = 500) {
+  static fadeToScene(currentScene, targetScene, duration = 500, data) {
     // Fade camera to black
     currentScene.cameras.main.fadeOut(duration, 0, 0, 0);
     
     // Once fade completes, start the new scene
     currentScene.cameras.main.once('camerafadeoutcomplete', () => {
-      currentScene.scene.start(targetScene);
+      currentScene.scene.start(targetScene, data);
     });
   }
 

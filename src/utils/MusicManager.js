@@ -1,4 +1,4 @@
-﻿const MUSIC_ICON_ON = "🔊";
+const MUSIC_ICON_ON = "🔊";
 const MUSIC_ICON_OFF = "🔇";
 
 export default class MusicManager {

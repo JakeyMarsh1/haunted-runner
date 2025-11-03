@@ -105,8 +105,8 @@ export default class ConsentScene extends Phaser.Scene {
       .setDepth(102);
 
     // Load saved preferences or use defaults
-    this.jumpscareEnabled = this.getSavedPreference('jumpscareEnabled', true);
-    this.musicEnabled = this.getSavedPreference('musicEnabled', true);
+    this.jumpscareEnabled = this.getSavedPreference('jumpscareEnabled', false);
+    this.musicEnabled = this.getSavedPreference('musicEnabled', false);
     this.updateCheckboxes();
 
     // Continue button
@@ -153,13 +153,24 @@ export default class ConsentScene extends Phaser.Scene {
   }
 
   getSavedPreference(key, defaultValue) {
-    const saved = localStorage.getItem(`hauntedRunner_${key}`);
-    return saved !== null ? JSON.parse(saved) : defaultValue;
+    try {
+      if (typeof window === 'undefined' || !window?.localStorage) return defaultValue;
+      const saved = window.localStorage.getItem(`hauntedRunner_${key}`);
+      return saved !== null ? JSON.parse(saved) : defaultValue;
+    } catch (error) {
+      console.warn('[ConsentScene] Failed to read preference', key, error);
+      return defaultValue;
+    }
   }
 
   savePreferences() {
-    localStorage.setItem('hauntedRunner_jumpscareEnabled', JSON.stringify(this.jumpscareEnabled));
-    localStorage.setItem('hauntedRunner_musicEnabled', JSON.stringify(this.musicEnabled));
+    try {
+      if (typeof window === 'undefined' || !window?.localStorage) return;
+      window.localStorage.setItem('hauntedRunner_jumpscareEnabled', JSON.stringify(this.jumpscareEnabled));
+      window.localStorage.setItem('hauntedRunner_musicEnabled', JSON.stringify(this.musicEnabled));
+    } catch (error) {
+      console.warn('[ConsentScene] Failed to persist preferences', error);
+    }
   }
 
   handleContinue() {
