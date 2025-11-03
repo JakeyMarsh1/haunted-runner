@@ -2,7 +2,7 @@
 # [Haunted-runner](https://haunted-runner.vercel.app/)
 
 
-🎃 ## Game Description: 
+## 🎃 Game Description: 
 
 Welcome to The haunted Runner, the spookiest Halloween adventure ever! 👻
 
@@ -141,24 +141,19 @@ The wireframes were developed for desktop sizes.
 | Leaderboard | Top 10 high scores displayed in ranked order with player names and scores. Features "Back to Menu" button and clean table layout. Scores persist across sessions using Supabase backend integration. Scrollable list with orange-themed UI matching game aesthetic. | ![screenshot](src/assets/documents/leaderboard.png) |
 | Game Settings | Consent modal appearing on first game load. Allows players to enable/disable background music and jumpscare effects. Features toggle switches, "Save Preferences" button, and persistent storage across sessions. Reopenable via settings gear icon in main menu. | ![screenshot](src/assets/documents/game-settings.png) |
 | About Page | Grid of team members, roles and social media links (GitHub, LinkedIn). | ![screenshot](src/assets/documents/about-team.png) |
-| Scene Transitions | Smooth fade-to-black transitions between all scenes (Boot → Menu, Menu → Game, Game → GameOver, etc.). Fade duration of 600-800ms creates professional, cinematic feel. Prevents jarring scene switches and enhances polish. Implemented via reusable SceneTransition utility class. | ![screenshot](documentation/features/transitions.png) |
-| Player Controls | Responsive jump mechanics via SPACE key or screen tap/click. Variable jump height - hold for higher jumps, release early for shorter hops. Smooth animation state machine with 5 states (run, jump start, in-air, falling, death).| ![screenshot](documentation/features/player.png) |
-| Jumpscares | Random horror events triggered every 12-24 seconds. | ![screenshot](documentation/features/jumpscare.png) |
+| Player Controls | Responsive jump mechanics via SPACE key or screen tap/click. Variable jump height - hold for higher jumps, release early for shorter hops. Smooth animation state machine with 5 states (run, jump start, in-air, falling, death).| ![screenshot](src/assets/documents/jump.png) |
+| Scene Transitions | Smooth fade-to-black transitions between all scenes (Boot → Menu, Menu → Game, Game → GameOver, etc.). Fade duration of 600-800ms creates professional, cinematic feel. Prevents jarring scene switches and enhances polish. Implemented via reusable SceneTransition utility class. | |
+| Jumpscares | Random horror events triggered every 12-24 seconds. |  |
 
 ### Future Features
 
-- **Obstacles**: Add dynamic obstacles to avoid
-- **Collectibles**: Candies or items to collect for points
-- **Score System**: Track distance, items, and best runs
-- **High Score Leaderboard**: Persist via backend/database
-- **Difficulty Scaling**: Faster speeds and more obstacles over time
-- **Power-ups**: Temporary abilities (e.g., invincibility, speed)
-- **Multiple Characters**: Unlockable skins
-- **Achievements**: Track accomplishments
-- **Mobile Optimization**: Touch input and better layout
-- **Dark Mode**: Enhance horror atmosphere
-- **Localization**: Multi-language support
-- **Game Over**: Finish screen with stats and restart
+- **Collectibles System**: Add candy, pumpkins, or soul orbs that players can collect for bonus points
+- **Difficulty Progression**: Gradually increase game speed and obstacle frequency as the player survives longer
+- **Multiple Characters**: Unlock alternative playable characters (ghost, witch, vampire) with unique animations
+- **Achievement System**: Track milestones like "Survive 60 seconds", "Jump 100 times", "Collect 50 items"
+- **Social Sharing**: Allow players to share their high scores directly to social media platforms
+- **Boss Encounters**: Periodic special obstacles or mini-boss characters that require multiple jumps to avoid
+- **Multiplayer Race Mode**: Competitive mode where players race side-by-side in real-time
 
 ## Tools & Technologies
 
@@ -169,37 +164,15 @@ The wireframes were developed for desktop sizes.
 | [![badge](https://img.shields.io/badge/Vite-grey?logo=vite&logoColor=646CFF)](https://vitejs.dev) | Build tool and HMR |
 | [![badge](https://img.shields.io/badge/TailwindCSS-grey?logo=tailwindcss&logoColor=38B2AC)](https://tailwindcss.com) | Styling |
 | [![badge](https://img.shields.io/badge/HTML5-grey?logo=html5&logoColor=E34F26)](https://en.wikipedia.org/wiki/HTML) | Structure |
-| [![badge](https://img.shields.io/badge/CSS3-grey?logo=css3&logoColor=1572B6)](https://en.wikipedia.org/wiki/CSS) | Styling |
 | [![badge](https://img.shields.io/badge/Git-grey?logo=git&logoColor=F05032)](https://git-scm.com) | Version control |
 | [![badge](https://img.shields.io/badge/GitHub-grey?logo=github&logoColor=181717)](https://github.com) | Repository |
 | [![badge](https://img.shields.io/badge/VSCode-grey?logo=visualstudiocode&logoColor=007ACC)](https://code.visualstudio.com) | IDE |
-| [![badge](https://img.shields.io/badge/GitHub_Pages-grey?logo=githubpages&logoColor=222222)](https://pages.github.com) | Hosting |
+| [![badge](https://img.shields.io/badge/Vercel-grey?logo=vercel&logoColor=222222)](https://pages.github.com) | Hosting |
 | [![badge](https://img.shields.io/badge/Balsamiq-grey?logo=balsamiq&logoColor=CE0908)](https://balsamiq.com/wireframes) | Wireframes |
 | [![badge](https://img.shields.io/badge/Coolors-grey?logo=coolors&logoColor=00C4CC)](https://coolors.co) | Color palette |
 | [![badge](https://img.shields.io/badge/Google_Fonts-grey?logo=google&logoColor=4285F4)](https://fonts.google.com) | Typography |
+ 
 
-## Agile Development Process
-
-### GitHub Projects
-
-[GitHub Projects]() served as an Agile tool for this project. Through it, EPICs, User Stories, issues/bugs, and Milestone tasks were planned, then subsequently tracked on a regular basis using the Kanban project board.
-
-![screenshot](documentation/gh-projects.png)
-
-### GitHub Issues
-
-[GitHub Issues]() served as another Agile tool. There, we managed the User Stories and Milestone tasks, and tracked any issues/bugs.
-
-| Link | Screenshot |
-| --- | --- |
-| [![GitHub issues](https://img.shields.io/github/issues-search/JakeyMarsh1/haunted-runner?query=is%3Aissue%20is%3Aopen%20-label%3Abug&label=Open%20Issues&color=yellow)](https://www.github.com/Scaphix/haunted-runner/issues?q=is%3Aissue%20is%3Aopen%20-label%3Abug) | ![screenshot](documentation/gh-issues-open.png) |
-| [![GitHub closed issues](https://img.shields.io/github/issues-search/JakeyMarsh1/haunted-runner?query=is%3Aissue%20is%3Aclosed%20-label%3Abug&label=Closed%20Issues&color=green)](https://www.github.com/Scaphix/haunted-runner/issues?q=is%3Aissue%20is%3Aclosed%20-label%3Abug) | ![screenshot](documentation/gh-issues-closed.png) |
-
-
-## Testing
-
-> [!NOTE]  
-> For all testing, please refer to the [TESTING.md](TESTING.md) file.
 ## Bug Documentation
 
 ### Browser Audio Policy Issue
@@ -262,8 +235,6 @@ You can clone the repository by following these steps:
 1. Install dependencies: `npm install`
 2. Start the dev server: `npm run dev`
 3. Open the localhost URL in your browser
-
-
 
 
 
