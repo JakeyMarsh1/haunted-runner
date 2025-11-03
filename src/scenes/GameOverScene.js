@@ -5,6 +5,8 @@
 */
 
 import Phaser from 'phaser';
+import backgroundImg from '../assets/backgrounds/Background1.png';
+import evilLaughSfx from '../assets/audio/evil-laugh.mp3';
 import {
   submitScore,
   sanitizeName,
@@ -24,11 +26,11 @@ export default class GameOverScene extends Phaser.Scene {
     this.isSubmitting = false;
     this.scoreSubmitted = false;
     this.layout = {
-      promptY: 310,
+      promptY: 300,
       inputY: 360,
-      submitY: 430,
-      statusY: 470,
-      actionY: 520,
+      submitY: 470,
+      statusY: 520,
+      actionY: 590,
     };
   }
 
@@ -43,24 +45,58 @@ export default class GameOverScene extends Phaser.Scene {
     }
   }
 
+  preload() {
+    if (!this.textures.exists('gameOverBg')) {
+      this.load.image('gameOverBg', backgroundImg);
+    }
+    if (!this.cache.audio.exists('gameOverLaugh')) {
+      this.load.audio('gameOverLaugh', evilLaughSfx);
+    }
+  }
+
   create() {
     const { promptY, submitY, statusY, actionY } = this.layout;
 
     // Background
+    if (this.textures.exists('gameOverBg')) {
+      this.add
+        .image(this.cameras.main.centerX, this.cameras.main.centerY, 'gameOverBg')
+        .setOrigin(0.5)
+        .setDisplaySize(this.cameras.main.width, this.cameras.main.height)
+        .setDepth(-5);
+    }
+
     this.add.rectangle(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
       this.cameras.main.width,
       this.cameras.main.height,
-      0x1a1a1a
+      0x0b0f14,
+      0.82
     );
+
+    if (this.cache.audio.exists('gameOverLaugh')) {
+      try {
+        this.sound.play('gameOverLaugh', { volume: 0.8 });
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('[GameOverScene] Failed to play evil laugh', error);
+        }
+      }
+    }
 
     // Title: "GAME OVER"
     this.add.text(
       this.cameras.main.centerX,
       80,
       'GAME OVER',
-      { fontSize: '48px', fill: '#ff6600', fontStyle: 'bold' }
+      {
+        fontFamily: '"Creepster", cursive',
+        fontSize: '64px',
+        fill: '#ff6600',
+        stroke: '#000000',
+        strokeThickness: 6,
+      }
     ).setOrigin(0.5);
 
     // Final score display
@@ -99,59 +135,41 @@ export default class GameOverScene extends Phaser.Scene {
     window.addEventListener('scroll', this.boundRepositionInput, { passive: true });
     this.scale.on('resize', this.boundRepositionInput, this);
 
-    // Restart button
-    const restartButton = this.add.rectangle(
-      this.cameras.main.centerX - 120,
-      actionY,
-      180,
-      50,
-      0x00aa00
-    );
-    restartButton.setInteractive({ useHandCursor: true });
-    restartButton.on('pointerdown', () => this.handleRestart());
+    // Submit score button (for Supabase integration)
+    this.createRoundedButton({
+      x: this.cameras.main.centerX,
+      y: submitY,
+      width: 220,
+      height: 56,
+      fill: 0xff6b2c,
+      label: '📨 Submit Score',
+      textColor: '#ffffff',
+      onClick: () => this.handleSubmitScore(),
+    });
 
-    this.add.text(
-      this.cameras.main.centerX - 120,
-      actionY,
-      'RESTART',
-      { fontSize: '20px', fill: '#000', fontStyle: 'bold' }
-    ).setOrigin(0.5);
+    // Restart button
+    this.createRoundedButton({
+      x: this.cameras.main.centerX - 150,
+      y: actionY,
+      width: 200,
+      height: 56,
+      fill: 0x22c55e,
+      label: '🔄 Restart',
+      textColor: '#0f172a',
+      onClick: () => this.handleRestart(),
+    });
 
     // Leaderboard button
-    const leaderboardButton = this.add.rectangle(
-      this.cameras.main.centerX + 120,
-      actionY,
-      180,
-      50,
-      0x0066ff
-    );
-    leaderboardButton.setInteractive({ useHandCursor: true });
-    leaderboardButton.on('pointerdown', () => this.handleLeaderboard());
-
-    this.add.text(
-      this.cameras.main.centerX + 120,
-      actionY,
-      'LEADERBOARD',
-      { fontSize: '20px', fill: '#fff', fontStyle: 'bold' }
-    ).setOrigin(0.5);
-
-    // Submit score button (for Supabase integration)
-    const submitButton = this.add.rectangle(
-      this.cameras.main.centerX,
-      submitY,
-      200,
-      50,
-      0xff6600
-    );
-    submitButton.setInteractive({ useHandCursor: true });
-    submitButton.on('pointerdown', () => this.handleSubmitScore());
-
-    this.add.text(
-      this.cameras.main.centerX,
-      submitY,
-      'SUBMIT SCORE',
-      { fontSize: '20px', fill: '#fff', fontStyle: 'bold' }
-    ).setOrigin(0.5);
+    this.createRoundedButton({
+      x: this.cameras.main.centerX + 150,
+      y: actionY,
+      width: 200,
+      height: 56,
+      fill: 0x2563eb,
+      label: '🏆 Leaderboard',
+      textColor: '#ffffff',
+      onClick: () => this.handleLeaderboard(),
+    });
 
     // Submission status text (hidden until submit)
     this.statusText = this.add
@@ -163,6 +181,42 @@ export default class GameOverScene extends Phaser.Scene {
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.onSceneShutdown, this);
     this.events.once(Phaser.Scenes.Events.DESTROY, this.onSceneShutdown, this);
+  }
+
+  createRoundedButton({ x, y, width, height, fill, label, textColor = '#ffffff', onClick }) {
+    const radius = Math.min(12, height / 2);
+    const graphics = this.add.graphics();
+    graphics.fillStyle(fill, 1);
+    graphics.fillRoundedRect(x - width / 2, y - height / 2, width, height, radius);
+    graphics.setDepth(1);
+
+    const zone = this.add
+      .zone(x, y, width, height)
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+
+    zone.on('pointerdown', onClick);
+
+    const text = this.add
+      .text(x, y, label, {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '20px',
+        fontStyle: 'bold',
+        color: textColor,
+      })
+      .setOrigin(0.5)
+      .setDepth(6);
+
+    zone.on('pointerover', () => {
+      graphics.setAlpha(0.9);
+      text.setScale(1.05);
+    });
+    zone.on('pointerout', () => {
+      graphics.setAlpha(1);
+      text.setScale(1);
+    });
+
+    return { graphics, zone, text };
   }
 
   createNameInputElement() {
@@ -178,14 +232,15 @@ export default class GameOverScene extends Phaser.Scene {
       top: 0;
       left: 0;
       transform: translate(-50%, -50%);
-      width: 250px;
-      padding: 10px;
+      width: 260px;
+      padding: 12px;
       font-size: 16px;
       border: 2px solid #ff6600;
-      border-radius: 5px;
-      background: #222;
+      border-radius: 12px;
+      background: rgba(34, 34, 34, 0.9);
       color: #fff;
       text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
       z-index: 100;
     `;
 
