@@ -1,24 +1,24 @@
 ﻿export default class DifficultyManager {
   constructor({
-    baseGameSpeed = 340,
-    obstacleSpeedMultiplier = 0.8,
-    parallaxPrimaryFactor = 0.85,
+    baseGameSpeed = 330,
+    obstacleSpeedMultiplier = 0.1,
+    parallaxPrimaryFactor = 0.8,
 
     // Slower, longer early ramp
-    rampStart = 300,
-    rampEnd = 5000,
-    maxSpeedAtRampEnd = 1.8,    // scale at rampEnd
+    rampStart = 450,
+    rampEnd = 7200,
+    maxSpeedAtRampEnd = 1.45,    // scale at rampEnd
 
     // Endless post-ramp growth toward a sane cap
-    hardSpeedCap = 6.0,
-    postRampStep = 500,         // score per growth step
-    postRampGrowthRate = 0.03,  // ~3% per step
+    hardSpeedCap = 3.0,
+    postRampStep = 800,         // score per growth step
+    postRampGrowthRate = 0.02,  // ~2% per step
 
     // Spawn windows: tighten more conservatively
-    spawnIntervalBase = [2800, 4200],
-    spawnIntervalAtRampEnd = [1200, 2200],
-    postRampTightenRate = 0.08, // ~8% tighter per step
-    minSpawnFloor = 350,
+    spawnIntervalBase = [3200, 4800],
+    spawnIntervalAtRampEnd = [1800, 2800],
+    postRampTightenRate = 0.05, // ~5% tighter per step
+    minSpawnFloor = 700,
   } = {}) {
     this.baseGameSpeed = baseGameSpeed;
     this.obstacleSpeedMultiplier = obstacleSpeedMultiplier;
@@ -80,7 +80,11 @@
       const t = this.#easeSmoothstep(this.#progress(score));
       const [bMin, bMax] = this.spawnIntervalBase;
       const [rMin, rMax] = this.spawnIntervalAtRampEnd;
-      return [Math.round(lerp(bMin, rMin, t)), Math.round(lerp(bMax, rMax, t))];
+      let min = Math.round(lerp(bMin, rMin, t));
+      let max = Math.round(lerp(bMax, rMax, t));
+      min = Math.max(this.minSpawnFloor, min);
+      max = Math.max(min + 250, max);
+      return [min, max];
     }
 
     const [startMin, startMax] = this.spawnIntervalAtRampEnd;
@@ -89,7 +93,7 @@
     const tighten = Math.pow(1 + this.postRampTightenRate, steps);
 
     let min = Math.max(this.minSpawnFloor, Math.round(startMin / tighten));
-    let max = Math.max(min + 1, Math.round(startMax / tighten));
+    let max = Math.max(min + 250, Math.round(startMax / tighten));
     return [min, max];
   }
 }

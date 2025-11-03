@@ -3,10 +3,13 @@ import Obstacle from '../components/Obstacle.js';
 
 export default class ObstacleManager {
   constructor(scene, {
-    speedMultiplier = 0.9,
+    speedMultiplier = 1,
     intervalMs = [2200, 3600],
     floorYOffset = 112,
     intervalProvider = null,
+    intervalFloor = 500,
+    minSpacingPx = 300,
+    minSpacingDelayMs = 220,
   } = {}) {
     this.scene = scene;
     this.speedMultiplier = speedMultiplier;
@@ -14,6 +17,9 @@ export default class ObstacleManager {
     this.intervalMax = intervalMs[1];
     this.floorYOffset = floorYOffset;
     this.intervalProvider = intervalProvider;
+    this.intervalFloor = intervalFloor;
+    this.minSpacingPx = minSpacingPx;
+    this.minSpacingDelayMs = minSpacingDelayMs;
 
     this.obstacles = [];
     this.elapsed = 0;
@@ -27,17 +33,24 @@ export default class ObstacleManager {
     this.nextSpawnIn = this.#rngInterval(0);
   }
 
-  update(deltaMs, baseSpeed, player, score = 0) {
+  update(deltaMs, distancePerFrame, player, score = 0, currentSpeed = null) {
     this.elapsed += deltaMs;
 
     if (this.elapsed >= this.nextSpawnIn) {
-      this.spawn();
-      this.elapsed = 0;
-      this.nextSpawnIn = this.#rngInterval(score);
+      const effectiveSpeed = currentSpeed ?? (distancePerFrame * 60);
+      if (this.#hasSpawnSpace(effectiveSpeed)) {
+        this.spawn();
+        this.elapsed = 0;
+        this.nextSpawnIn = this.#rngInterval(score);
+      } else {
+        // not enough room yet; try again shortly
+        this.nextSpawnIn += this.minSpacingDelayMs;
+        this.nextSpawnIn = Math.min(this.nextSpawnIn, this.minSpacingDelayMs * 3);
+      }
     }
 
     // Move obstacles faster as baseSpeed rises
-    const move = baseSpeed * this.speedMultiplier;
+    const move = distancePerFrame * this.speedMultiplier;
 
     this.obstacles = this.obstacles.filter((ob) => {
       ob.update(move);
@@ -69,11 +82,31 @@ export default class ObstacleManager {
     if (typeof this.intervalProvider === 'function') {
       const range = this.intervalProvider(score);
       if (Array.isArray(range) && range.length === 2) {
-        min = Math.max(250, Math.min(range[0], range[1]));
-        max = Math.max(min + 1, Math.max(range[0], range[1]));
+        min = Math.max(this.intervalFloor, Math.min(range[0], range[1]));
+        max = Math.max(min + 250, Math.max(range[0], range[1]));
       }
     }
 
+    min = Math.max(this.intervalFloor, min);
+    max = Math.max(min + 250, max);
+
     return Phaser.Math.Between(min, max);
+  }
+
+  #hasSpawnSpace(currentSpeed = 0) {
+    if (!this.obstacles.length) return true;
+
+    const { width: W } = this.scene.scale;
+    const futureSpawnX = W + 50;
+    const minDistance = Math.max(this.minSpacingPx, Math.round(currentSpeed * 0.55));
+
+    let rightmost = -Infinity;
+    for (const ob of this.obstacles) {
+      const x = ob?.sprite?.x ?? -Infinity;
+      if (x > rightmost) rightmost = x;
+    }
+
+    if (!Number.isFinite(rightmost)) return true;
+    return futureSpawnX - rightmost >= minDistance;
   }
 }
