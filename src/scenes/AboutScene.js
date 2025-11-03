@@ -4,16 +4,17 @@ import avatarJakeImg from '../assets/avatars/jake.png';
 import avatarChahinezImg from '../assets/avatars/chahinez.jpg';
 import avatarSoumyaImg from '../assets/avatars/soumya.jpg';
 import avatarKarolisImg from '../assets/avatars/karolis.jpg';
+import backgroundImg from '../assets/backgrounds/Background4.png';
 
 const TEAM = [
   { key: 'avatar_jake',     name: 'Jake',     role: 'Scrum Master',
-    links: [{ label: 'GitHub', url: 'https://github.com/example1' },
-            { label: 'LinkedIn', url: 'https://example.com' }] },
+    links: [{ label: 'GitHub', url: 'https://github.com/JakeyMarsh1' },
+            { label: 'LinkedIn', url: 'https://www.linkedin.com/in/jake--marsh/' }] },
   { key: 'avatar_chahinez', name: 'Chahinez', role: 'Game Dev',
-    links: [{ label: 'GitHub', url: 'https://github.com/example2' },
-            { label: 'LinkedIn', url: 'https://example.com' }] },
-  { key: 'avatar_soumya',   name: 'Soumya',   role: 'Documentation',
-    links: [{ label: 'GitHub', url: 'https://github.com/example3' },
+    links: [{ label: 'GitHub', url: 'https://github.com/Scaphix' },
+            { label: 'LinkedIn', url: 'https://www.linkedin.com/in/chahinez-h%C3%B6lzenbein-6b4176263/' }] },
+  { key: 'avatar_soumya',   name: 'Soumya',   role: 'Covid Patient',
+    links: [{ label: 'GitHub', url: 'https://github.com/soumya2219' },
             { label: 'LinkedIn', url: 'https://www.linkedin.com/in/soumya-sharma-a34b76374/' }] },
   { key: 'avatar_karolis',  name: 'Karolis',  role: 'A Ghost',
     links: [{ label: 'GitHub', url: 'https://github.com/kpetrauskas92' },
@@ -27,10 +28,16 @@ const AVATAR_ASSETS = [
   { key: 'avatar_karolis', src: avatarKarolisImg },
 ];
 
+const BACKGROUND_KEY = 'about_background';
+
 export default class AboutScene extends Phaser.Scene {
   constructor() { super('AboutScene'); }
 
   preload() {
+    if (!this.textures.exists(BACKGROUND_KEY)) {
+      this.load.image(BACKGROUND_KEY, backgroundImg);
+    }
+
     AVATAR_ASSETS.forEach(({ key, src }) => {
       if (!this.textures.exists(key)) {
         this.load.image(key, src);
@@ -42,7 +49,15 @@ export default class AboutScene extends Phaser.Scene {
     // Screen dimensions
     const { width: W, height: H } = this.scale;
     this.cameras.main.setBackgroundColor('#0b0f14');
-    this.add.rectangle(0, 0, W, H, 0x0b0f14).setOrigin(0);
+
+    if (this.textures.exists(BACKGROUND_KEY)) {
+      this.add.image(W / 2, H / 2, BACKGROUND_KEY)
+        .setOrigin(0.5)
+        .setDisplaySize(W, H)
+        .setDepth(-2);
+    }
+
+    this.add.rectangle(0, 0, W, H, 0x0b0f14, 0.75).setOrigin(0);
 
     // Title
     this.add.text(W/2, 60, 'ABOUT THE TEAM', {

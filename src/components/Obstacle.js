@@ -35,6 +35,16 @@ export default class Obstacle {
     // Play animation if it exists
     if (scene.anims.exists('zombieHandAnim')) {
       this.sprite.play('zombieHandAnim');
+      
+      // Add 2-second cooldown to prevent sound overlap
+      const currentTime = scene.time.now;
+      const lastSoundTime = scene.lastObstacleSoundTime || 0;
+      const SOUND_COOLDOWN = 2000; // 2 seconds
+      
+      if (currentTime - lastSoundTime >= SOUND_COOLDOWN) {
+        this.scene.sound.play('typeSound1');
+        scene.lastObstacleSoundTime = currentTime;
+      }
     }
 
     if (import.meta.env.DEV) {
@@ -66,6 +76,12 @@ export default class Obstacle {
     // Play death animation on player
     player.playDeath();
 
+    // Stop ALL sounds (music, jumpscares, obstacle sounds, etc.)
+    this.scene.sound.stopAll();
+
+    // Play ONLY the game over sound effect
+    this.scene.sound.play('typeSound2');
+    
     // Pause game movement
     this.scene.isPaused = true;
 

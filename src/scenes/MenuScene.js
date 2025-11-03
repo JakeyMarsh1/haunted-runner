@@ -17,6 +17,8 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   create() {
+    this.initPreferenceState();
+
     const { width, height } = this.scale;
 
     SceneTransition.setupFadeIn(this, 800);
@@ -92,7 +94,19 @@ export default class MenuScene extends Phaser.Scene {
     typewriter.start();
     this.typewriter = typewriter;
 
+    this.add
+      .text(width / 2, contentY + 350, "Tap or press Space to skip", {
+        fontFamily: "Inter, sans-serif",
+        fontSize: "16px",
+        color: "#9ca3af",
+      })
+      .setOrigin(0.5)
+      .setDepth(11);
+
     this.input.keyboard.once("keydown", () => {
+      if (this.typewriter?.getIsTyping()) this.typewriter.skip();
+    });
+    this.input.once("pointerdown", () => {
       if (this.typewriter?.getIsTyping()) this.typewriter.skip();
     });
   }
@@ -128,16 +142,27 @@ export default class MenuScene extends Phaser.Scene {
   buildMenu() {
     const { width, height } = this.scale;
 
+    const panel = this.add
+      .rectangle(width / 2, height * 0.58, width * 0.5, height * 0.5, 0x111827, 0.65)
+      .setOrigin(0.5)
+      .setDepth(1)
+      .setScrollFactor(0)
+      .setStrokeStyle(2, 0xff6600, 0.6);
+    if (panel.postFX?.addBlur) {
+      panel.postFX.addBlur(4, 4);
+    }
+
     this.add
       .text(width / 2, height * 0.25, "Haunted Runner", {
         fontFamily: '"Creepster", cursive',
-        fontSize: "56px",
+        fontSize: "96px",
         color: "#ff6600",
         stroke: "#000000",
         strokeThickness: 5,
         align: "center",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(2);
 
     this.add
       .text(width / 2, height * 0.37, "Choose your path...", {
@@ -146,7 +171,8 @@ export default class MenuScene extends Phaser.Scene {
         color: "#cbd5f5",
         fontStyle: "italic",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(2);
 
     const startBtn = this.createMenuButton(width / 2, height * 0.48, "🎃 Start Game");
     startBtn.on("pointerup", () => SceneTransition.fadeToScene(this, "GameScene", 600));
@@ -154,10 +180,18 @@ export default class MenuScene extends Phaser.Scene {
     const tutorialBtn = this.createMenuButton(width / 2, height * 0.58, "📖 Tutorial");
     tutorialBtn.on("pointerup", () => SceneTransition.fadeToScene(this, "TutorialScene", 600));
 
-    const aboutBtn = this.createMenuButton(width / 2, height * 0.68, "👥 About the team");
+    const settingsBtn = this.createMenuButton(width / 2, height * 0.68, "⚙️ Settings");
+    settingsBtn.on("pointerup", () => this.openConsentModal());
+
+    const leaderboardBtn = this.createMenuButton(width / 2, height * 0.78, "🏆 Leaderboard");
+    leaderboardBtn.on("pointerup", () =>
+      SceneTransition.fadeToScene(this, "HighScoreScene", 600, { from: "MenuScene" })
+    );
+
+    const aboutBtn = this.createMenuButton(width / 2, height * 0.88, "👥 About the team");
     aboutBtn.on("pointerup", () => SceneTransition.fadeToScene(this, "AboutScene", 600));
 
-    this.menuButtons = [startBtn, tutorialBtn, aboutBtn];
+    this.menuButtons = [startBtn, tutorialBtn, settingsBtn, leaderboardBtn, aboutBtn];
 
     this.musicButton = MusicManager.createMusicButton(this, width - 20, 20);
 
@@ -170,14 +204,9 @@ export default class MenuScene extends Phaser.Scene {
 
     settingsButton.on("pointerover", () => settingsButton.setScale(1.2));
     settingsButton.on("pointerout", () => settingsButton.setScale(1.0));
-    settingsButton.on("pointerdown", () => {
-      if (this.consentModalOpen) return;
-      this.consentModalOpen = true;
-      new ConsentModal(this, (preferences) => this.handleConsentComplete(preferences));
-    });
+    settingsButton.on("pointerdown", () => this.openConsentModal());
 
-    this.consentModalOpen = true;
-    new ConsentModal(this, (preferences) => this.handleConsentComplete(preferences));
+    this.consentModalOpen = false;
 
     this.input.keyboard.on("keydown-SPACE", () => {
       if (this.consentModalOpen) return;
@@ -195,7 +224,8 @@ export default class MenuScene extends Phaser.Scene {
         strokeThickness: 4,
       })
       .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+      .setInteractive({ useHandCursor: true })
+      .setDepth(2);
 
     button.on("pointerover", () => {
       button.setColor("#ffffff");
@@ -212,11 +242,22 @@ export default class MenuScene extends Phaser.Scene {
     return button;
   }
 
+  openConsentModal() {
+    if (this.consentModalOpen) return;
+    try {
+      this.consentModalOpen = true;
+      new ConsentModal(this, (preferences) => this.handleConsentComplete(preferences));
+    } catch (error) {
+      logError("Failed to open consent modal", error);
+      this.consentModalOpen = false;
+    }
+  }
+
   handleConsentComplete(preferences) {
     log("handleConsentComplete", preferences);
 
     this.jumpscareEnabled = preferences.jumpscareEnabled;
-    this.musicEnabled = preferences.musicEnabled;
+    this.registry.set("jumpscareEnabled", this.jumpscareEnabled);
 
     MusicManager.init(this);
     const currentMusicState = MusicManager.getMusicState(this);
@@ -231,11 +272,44 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     const newMusicState = MusicManager.getMusicState(this);
+    this.registry.set("musicEnabled", newMusicState);
+    this.musicEnabled = newMusicState;
     if (this.musicButton) this.musicButton.setText(newMusicState ? "🔊" : "🔇");
+
+    this.sound.mute = !newMusicState;
 
     this.time.delayedCall(200, () => {
       this.consentModalOpen = false;
     });
+  }
+
+  initPreferenceState() {
+    MusicManager.init(this);
+
+    this.musicEnabled = this.getSavedPreference("musicEnabled", false);
+    this.jumpscareEnabled = this.getSavedPreference("jumpscareEnabled", false);
+
+    this.registry.set("musicEnabled", this.musicEnabled);
+    this.registry.set("jumpscareEnabled", this.jumpscareEnabled);
+
+    if (this.musicEnabled) {
+      this.sound.mute = false;
+      MusicManager.setupMusic(this, "menuMusic");
+    } else {
+      this.sound.stopAll();
+      this.sound.mute = true;
+    }
+  }
+
+  getSavedPreference(key, defaultValue) {
+    try {
+      if (typeof window === "undefined" || !window?.localStorage) return defaultValue;
+      const stored = window.localStorage.getItem(`hauntedRunner_${key}`);
+      return stored !== null ? JSON.parse(stored) : defaultValue;
+    } catch (error) {
+      logError("Failed to read preference", { key, error });
+      return defaultValue;
+    }
   }
 
   showFatalError(error) {

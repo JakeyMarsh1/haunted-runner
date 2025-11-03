@@ -18,8 +18,11 @@ class GameScene extends Phaser.Scene {
 
     this.obstacleConfig = {
       speedMultiplier: 0.8,
-      intervalMs: [2200, 3600],
+      intervalMs: [3000, 4600],
       floorYOffset: 112,
+      intervalFloor: 700,
+      minSpacingPx: 340,
+      minSpacingDelayMs: 260,
     };
 
     this.difficulty = null;
@@ -35,8 +38,8 @@ class GameScene extends Phaser.Scene {
 
   init() {
     const menuScene = this.scene.get('MenuScene');
-    this.jumpscareEnabled = menuScene?.jumpscareEnabled ?? true;
-    this.musicEnabled = menuScene?.musicEnabled ?? true;
+    this.jumpscareEnabled = menuScene?.jumpscareEnabled ?? false;
+    this.musicEnabled = menuScene?.musicEnabled ?? false;
   }
 
   preload() {
@@ -107,7 +110,7 @@ class GameScene extends Phaser.Scene {
     this.setupJumpControls();
 
     // Pause button
-    const settingsButton = this.add.text(W - 90, 32, '⚙', { fontSize: '28px', fontFamily: 'Arial' })
+    const settingsButton = this.add.text(W - 90, 32, '⚙️', { fontSize: '28px', fontFamily: 'Arial' })
       .setOrigin(0.5, 0.5)
       .setScrollFactor(0)
       .setInteractive({ useHandCursor: true })
@@ -208,7 +211,7 @@ class GameScene extends Phaser.Scene {
     if (this.scoreText) this.scoreText.setText(`Score: ${this.score.toLocaleString()}`);
 
     this.parallax.update(base, mainFactor);
-    this.obstacles.update(delta, base, this.player, this.score);
+    this.obstacles.update(delta, base, this.player, this.score, gameSpeed);
   }
 
   // --- internal: input binding helpers and cleanup ---
